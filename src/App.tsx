@@ -1,44 +1,63 @@
 import { useEffect, useRef, useState } from "react";
 
-import { LAYERS, LEVELS } from "@data/locations";
-import type { CHALLENGE, LEVEL, LEVEL_TYPE } from "@data/types";
-import { shuffle, shuffleChallenges } from "@utils/functions";
+import {
+  LAYERS,
+  LEVELS
+} from "@data/locations";
+
+import type {
+  LEVEL_TYPE,
+  LEVEL_TYPEDATA,
+  EnrichedLevel,
+} from "@data/types";
+
+import type {
+  ChallengeRollConfig
+} from "@utils/types";
+
+import {
+  shuffle,
+  shuffleChallenges
+} from "@utils/functions";
+
+import {
+  IconMute,
+  IconSettings
+} from '@components/svg/Icons';
+
+import type {
+  SettingsTab,
+  BackgroundChoice
+} from "@utils/pages/visuals";
 
 import "./App.css";
 
-type EnrichedLevel = LEVEL & { challenges: CHALLENGE[]; pRank: boolean };
-type BackgroundChoice = "red" | "storm" | "rust" | "ash" | "catacombs";
-
-type ChallengeRollConfig = {
-  includeBaseChallenges: boolean;
-  includeExtraChallenges: boolean;
-  includePRank: boolean;
-  baseChance: number;
-  extraChance: number;
-  prankChance: number;
-};
-
-const LEVEL_TYPE_META: Record<LEVEL_TYPE, { label: string; image: string; accent: string }> = {
+const LEVEL_TYPE_META: Record<LEVEL_TYPE, LEVEL_TYPEDATA> = {
   NORMAL: {
     label: "NORMAL",
-    image: wikiFile("01_thumbnail.png"),
+    image: "/media/images/normal.png",
     accent: "normal",
   },
   SECRET: {
     label: "SECRET",
-    image: wikiFile("QuestionMark.svg"),
+    image: "/media/images/secret.svg",
     accent: "secret",
   },
   PRIME: {
     label: "PRIME SANCTUMS",
-    image: wikiFile("Minos_Prime.webp"),
+    image: "/media/images/prime.png",
     accent: "prime",
   },
   BOSS: {
     label: "BOSS",
-    image: wikiFile("Gabriel, Judge of Hell.webp"),
+    image: "/media/images/boss.png",
     accent: "boss",
   },
+  ENCORES: {
+    label: "ENCORES",
+    image: "/media/images/encore.png",
+    accent: "encores"
+  }
 };
 
 const LAYER_ORDER: Array<number | "P"> = [0, 1, 2, 3, 4, 5, 6, 7, 8, "P"];
@@ -56,10 +75,6 @@ const LEVELS_BY_LAYER = LAYER_ORDER.map(layer => ({
   levels: ALL_LEVELS.filter(level => level.layer === layer),
 }));
 
-function wikiFile(fileName: string) {
-  return `https://ultrakill.wiki.gg/wiki/Special:Redirect/file/${encodeURIComponent(fileName)}`;
-}
-
 function createSelectionMap(keys: readonly (string | number)[], initialValue = true) {
   return Object.fromEntries(keys.map(key => [String(key), initialValue])) as Record<string, boolean>;
 }
@@ -69,19 +84,28 @@ function percentToFloat(value: number) {
 }
 
 export default function App() {
+  // Main filters (visible on home page)
   const [includeNormal, setIncludeNormal] = useState(true);
-  const [includeSecret, setIncludeSecret] = useState(true);
+  const [includeSecret, setIncludeSecret] = useState(false);
   const [includePrime, setIncludePrime] = useState(false);
   const [includeBoss, setIncludeBoss] = useState(false);
+  const [includeEncores, setIncludeEncores] = useState(false);
 
-  const [selectedLayers, setSelectedLayers] = useState<Record<string, boolean>>(() => createSelectionMap(LAYER_ORDER));
-  const [selectedLevels, setSelectedLevels] = useState<Record<string, boolean>>(() => createSelectionMap(ALL_LEVELS.map(level => level.id)));
+  // Pool selection (inside settings)
+  const [selectedLayers, setSelectedLayers] = useState<Record<string, boolean>>(
+    () => createSelectionMap(LAYER_ORDER),
+  );
+  const [selectedLevels, setSelectedLevels] = useState<Record<string, boolean>>(
+    () => createSelectionMap(ALL_LEVELS.map(level => level.id)),
+  );
 
+  // Count + results
   const [count, setCount] = useState(1);
   const [results, setResults] = useState<EnrichedLevel[]>([]);
   const [rollCount, setRollCount] = useState(0);
   const [noPool, setNoPool] = useState(false);
 
+  // Challenge settings (inside settings)
   const [includeBaseChallenges, setIncludeBaseChallenges] = useState(true);
   const [includeExtraChallenges, setIncludeExtraChallenges] = useState(true);
   const [includePRank, setIncludePRank] = useState(true);
@@ -89,112 +113,110 @@ export default function App() {
   const [extraChance, setExtraChance] = useState(10);
   const [prankChance, setPrankChance] = useState(50);
 
+  // Visual/audio (inside settings)
   const [selectedBackground, setSelectedBackground] = useState<BackgroundChoice>("red");
   const [bgmVolume, setBgmVolume] = useState(50);
+  const [muted, setMuted] = useState(true);
 
+  // Settings modal state
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<SettingsTab>("visual");
+
+  // Refs
   const resultRef = useRef<HTMLDivElement>(null);
   const bgmRef = useRef<HTMLAudioElement>(null);
   const parryRef = useRef<HTMLAudioElement>(null);
-  const autoplayAttemptedRef = useRef(false);
 
   const maxCount = 10;
 
+  // BGM volume sync
   useEffect(() => {
     const bgm = bgmRef.current;
+    if (!bgm) return;
+    bgm.volume = muted ? 0 : percentToFloat(bgmVolume);
+  }, [bgmVolume, muted]);
 
-    if (!bgm) {
-      return;
-    }
-
-    bgm.volume = percentToFloat(bgmVolume);
-  }, [bgmVolume]);
-
+  // BGM autoplay
   useEffect(() => {
     const bgm = bgmRef.current;
+    if (!bgm) return;
 
-    if (!bgm || autoplayAttemptedRef.current) {
-      return;
-    }
+    const unlockAudio = async () => {
+      try {
+        bgm.muted = false;
+        bgm.volume = percentToFloat(bgmVolume);
 
-    autoplayAttemptedRef.current = true;
-    bgm.volume = percentToFloat(bgmVolume);
-    bgm.loop = true;
+        if (bgm.paused) {
+          await bgm.play();
+        }
 
-    const tryPlay = () => {
-      void bgm.play().catch(() => {});
+        setMuted(false);
+
+        window.removeEventListener("pointerdown", unlockAudio);
+        window.removeEventListener("keydown", unlockAudio);
+      } catch (err) {
+        console.error(err);
+      }
     };
 
-    tryPlay();
-
-    const retryPlay = () => {
-      tryPlay();
-    };
-
-    window.addEventListener("pointerdown", retryPlay, { once: true });
-    window.addEventListener("keydown", retryPlay, { once: true });
+    window.addEventListener("pointerdown", unlockAudio);
+    window.addEventListener("keydown", unlockAudio);
 
     return () => {
-      window.removeEventListener("pointerdown", retryPlay);
-      window.removeEventListener("keydown", retryPlay);
+      window.removeEventListener("pointerdown", unlockAudio);
+      window.removeEventListener("keydown", unlockAudio);
     };
   }, [bgmVolume]);
 
+  // Mute/unmute BGM
+  const toggleMute = () => {
+    const bgm = bgmRef.current;
+    if (!bgm) return;
+    const next = !muted;
+    setMuted(next);
+    bgm.volume = next ? 0 : percentToFloat(bgmVolume);
+  };
+
+  // Parry SFX
   const playParrySound = () => {
-    const parry = parryRef.current;
+    if (muted) return;
 
-    if (!parry) {
-      return;
-    }
+    const sfx = new Audio("/music/ultrakill-parry.mp3");
+    sfx.volume = 0.18;
 
-    parry.currentTime = 0;
-    parry.volume = 0.18;
-    void parry.play().catch(() => {});
+    void sfx.play().catch(() => { });
   };
 
-  const setAllLayers = (value: boolean) => {
-    setSelectedLayers(previous => {
-      const next = { ...previous };
-
-      for (const layer of LAYER_ORDER) {
-        next[String(layer)] = value;
-      }
-
+  // Layer helpers
+  const setAllLayers = (value: boolean) =>
+    setSelectedLayers(prev => {
+      const next = { ...prev };
+      for (const layer of LAYER_ORDER) next[String(layer)] = value;
       return next;
     });
-  };
 
-  const setLayerSelection = (layer: number | "P", value: boolean) => {
-    setSelectedLayers(previous => ({
-      ...previous,
-      [String(layer)]: value,
-    }));
-  };
+  const setLayerSelection = (layer: number | "P", value: boolean) =>
+    setSelectedLayers(prev => ({ ...prev, [String(layer)]: value }));
 
-  const setAllLevels = (value: boolean) => {
-    setSelectedLevels(previous => {
-      const next = { ...previous };
-
-      for (const level of ALL_LEVELS) {
-        next[level.id] = value;
-      }
-
+  // ── Level helpers ─────────────────────────────────────────────────────────
+  const setAllLevels = (value: boolean) =>
+    setSelectedLevels(prev => {
+      const next = { ...prev };
+      for (const level of ALL_LEVELS) next[level.id] = value;
       return next;
     });
-  };
 
-  const toggleLevel = (levelId: string) => {
-    setSelectedLevels(previous => ({
-      ...previous,
-      [levelId]: !previous[levelId],
-    }));
-  };
+  const toggleLevel = (levelId: string) =>
+    setSelectedLevels(prev => ({ ...prev, [levelId]: !prev[levelId] }));
 
+  // ── Roll ──────────────────────────────────────────────────────────────────
   const handleRoll = () => {
     const pool = ALL_LEVELS.filter(level => {
       if (level.type === "NORMAL" && !includeNormal) return false;
       if (level.type === "SECRET" && !includeSecret) return false;
       if (level.type === "PRIME" && !includePrime) return false;
       if (level.type === "BOSS" && !includeBoss) return false;
+      if (level.type === "ENCORES" && !includeEncores) return false;
       if (!selectedLayers[String(level.layer)]) return false;
       if (!selectedLevels[level.id]) return false;
       return true;
@@ -204,6 +226,12 @@ export default function App() {
       setNoPool(true);
       setResults([]);
       return;
+    }
+
+    const bgm = bgmRef.current;
+
+    if (bgm?.paused) {
+      void bgm.play().catch(() => { });
     }
 
     playParrySound();
@@ -222,109 +250,74 @@ export default function App() {
     };
 
     const enriched = picked.map(level => {
-      const challengeData = shuffleChallenges(level, challengeConfig);
-
-      return {
-        ...level,
-        challenges: challengeData.challenges,
-        pRank: challengeData.perfect_ranking,
-      };
+      const challengesData = shuffleChallenges(level, challengeConfig);
+      return { ...level, challenges: challengesData.challenges, perfect_ranking: challengesData.perfect_ranking };
     });
 
     setResults(enriched);
-    setRollCount(previous => previous + 1);
+    setRollCount(prev => prev + 1);
 
     window.setTimeout(() => {
       resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 100);
   };
 
+  // ── Derived ───────────────────────────────────────────────────────────────
   const background = BACKGROUNDS.find(item => item.id === selectedBackground);
   const backgroundStyle =
     selectedBackground === "red"
       ? undefined
       : {
-          backgroundImage: `linear-gradient(180deg, rgba(4, 0, 0, 0.7), rgba(12, 0, 0, 0.85)), url(${background?.image ?? ""})`,
-        };
+        backgroundImage: `linear-gradient(180deg, rgba(4,0,0,0.7), rgba(12,0,0,0.85)), url(${background?.image ?? ""})`,
+      };
 
-  const selectedLayerCount = LAYER_ORDER.filter(layer => selectedLayers[String(layer)]).length;
-  const selectedLevelCount = ALL_LEVELS.filter(level => selectedLevels[level.id]).length;
+  const selectedLayerCount = LAYER_ORDER.filter(l => selectedLayers[String(l)]).length;
+  const selectedLevelCount = ALL_LEVELS.filter(l => selectedLevels[l.id]).length;
   const filteredLevelCount = ALL_LEVELS.filter(level => {
     if (level.type === "NORMAL" && !includeNormal) return false;
     if (level.type === "SECRET" && !includeSecret) return false;
     if (level.type === "PRIME" && !includePrime) return false;
     if (level.type === "BOSS" && !includeBoss) return false;
+    if (level.type === "ENCORES" && !includeEncores) return false;
     if (!selectedLayers[String(level.layer)]) return false;
     if (!selectedLevels[level.id]) return false;
     return true;
   }).length;
 
+  const nothingEnabled = !includeNormal && !includeSecret && !includePrime && !includeBoss && !includeEncores;
+
+  // Close settings on Escape
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setSettingsOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Render
   return (
     <div className={`app-shell background-${selectedBackground}`} style={backgroundStyle}>
-      <audio ref={bgmRef} src="/music/bgm.ogg" loop preload="auto" />
+      <audio ref={bgmRef} src="/music/bgm.ogg" loop muted preload="auto" />
       <audio ref={parryRef} src="/music/ultrakill-parry.mp3" preload="auto" />
 
       <div className="scanlines">
         <div className="app-frame">
+
+          {/* HERO */}
           <header className="hero-panel panel">
             <div className="hero-panel__topline">
               <div className="hero-tag">ULTRAKILL LEVEL RANDOMIZER</div>
-              <div className="hero-tag hero-tag--muted">VISUAL / AUDIO / POOL CONTROL</div>
+              <div className="hero-tag hero-tag--muted">BOILING BLOOD...</div>
             </div>
             <h1 className="hero-title">ULTRANDOM</h1>
             <p className="hero-copy">
-              Tune the atmosphere, narrow the pool, and reroll the mission set with a single strike.
+              Select level types, set the count, and parry RANDOMIZE. Open SETTINGS to tune the pool, wallpaper, audio, and challenge odds.
             </p>
           </header>
 
+          {/* ── MAIN GRID ────────────────────────────────────────────────── */}
           <main className="dashboard-grid">
-            <section className="panel control-panel control-panel--wide">
-              <div className="panel-header">
-                <span className="panel-header-dot" />
-                <span className="panel-title">VISUAL / AUDIO LOADOUT</span>
-              </div>
-              <div className="panel-body control-stack">
-                <div className="field-group">
-                  <div className="field-label-row">
-                    <span className="field-label">WALLPAPER</span>
-                    <span className="field-value">{background?.label ?? "Red Field"}</span>
-                  </div>
-                  <div className="background-grid">
-                    {BACKGROUNDS.map(item => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        className={`background-card${selectedBackground === item.id ? " active" : ""}`}
-                        onClick={() => setSelectedBackground(item.id)}
-                      >
-                        <span className="background-card__preview" style={item.image ? { backgroundImage: `url(${item.image})` } : undefined}>
-                          {item.image ? null : <span className="background-card__preview-text">RED</span>}
-                        </span>
-                        <span className="background-card__label">{item.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
 
-                <div className="field-group">
-                  <div className="field-label-row">
-                    <span className="field-label">BGM VOLUME</span>
-                    <span className="field-value">{bgmVolume}%</span>
-                  </div>
-                  <input
-                    className="range-input"
-                    type="range"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={bgmVolume}
-                    onChange={event => setBgmVolume(Number(event.target.value))}
-                  />
-                  <div className="field-hint">bgm.ogg starts automatically at 50% and follows this slider.</div>
-                </div>
-              </div>
-            </section>
-
+            {/* Level type filters */}
             <section className="panel control-panel">
               <div className="panel-header">
                 <span className="panel-header-dot" />
@@ -332,20 +325,22 @@ export default function App() {
               </div>
               <div className="panel-body control-stack">
                 <div className="type-grid">
-                  {[
-                    { key: "NORMAL", state: includeNormal, set: setIncludeNormal },
-                    { key: "SECRET", state: includeSecret, set: setIncludeSecret },
-                    { key: "PRIME", state: includePrime, set: setIncludePrime },
-                    { key: "BOSS", state: includeBoss, set: setIncludeBoss },
-                  ].map(item => {
-                    const meta = LEVEL_TYPE_META[item.key as LEVEL_TYPE];
-
+                  {(
+                    [
+                      { key: "NORMAL" as LEVEL_TYPE, state: includeNormal, set: setIncludeNormal },
+                      { key: "SECRET" as LEVEL_TYPE, state: includeSecret, set: setIncludeSecret },
+                      { key: "PRIME" as LEVEL_TYPE, state: includePrime, set: setIncludePrime },
+                      { key: "BOSS" as LEVEL_TYPE, state: includeBoss, set: setIncludeBoss },
+                      { key: "ENCORES" as LEVEL_TYPE, state: includeEncores, set: setIncludeEncores }
+                    ] as const
+                  ).map(item => {
+                    const meta = LEVEL_TYPE_META[item.key];
                     return (
                       <button
                         key={item.key}
                         type="button"
                         className={`type-card${item.state ? " active" : ""}`}
-                        onClick={() => item.set(previous => !previous)}
+                        onClick={() => item.set(prev => !prev)}
                       >
                         <img className="type-card__icon" src={meta.image} alt="" aria-hidden="true" />
                         <span className="type-card__label">{meta.label}</span>
@@ -353,168 +348,13 @@ export default function App() {
                     );
                   })}
                 </div>
-                <div className="summary-line">{selectedLayerCount} layers selected, {selectedLevelCount} levels marked, {filteredLevelCount} currently eligible.</div>
-              </div>
-            </section>
-
-            <section className="panel control-panel control-panel--wide">
-              <div className="panel-header">
-                <span className="panel-header-dot" />
-                <span className="panel-title">POOL LAYERS</span>
-              </div>
-              <div className="panel-body control-stack">
-                <div className="action-row">
-                  <button type="button" className="mini-action" onClick={() => setAllLayers(true)}>
-                    Select all layers
-                  </button>
-                  <button type="button" className="mini-action" onClick={() => setAllLayers(false)}>
-                    Clear layers
-                  </button>
-                </div>
-                <div className="layer-grid">
-                  {LAYER_ORDER.map(layer => {
-                    const layerData = LAYERS[layer];
-                    const active = selectedLayers[String(layer)];
-                    const levelCount = ALL_LEVELS.filter(level => level.layer === layer).length;
-
-                    return (
-                      <button
-                        key={String(layer)}
-                        type="button"
-                        className={`layer-card${active ? " active" : ""}`}
-                        onClick={() => setLayerSelection(layer, !active)}
-                      >
-                        <span className="layer-card__swatch" style={{ background: layerData.color }} />
-                        <span className="layer-card__meta">
-                          <span className="layer-card__name">LAYER {layer} — {layerData.name}</span>
-                          <span className="layer-card__count">{levelCount} levels</span>
-                        </span>
-                      </button>
-                    );
-                  })}
+                <div className="summary-line">
+                  {selectedLayerCount} layers · {selectedLevelCount} levels marked · {filteredLevelCount} eligible
                 </div>
               </div>
             </section>
 
-            <section className="panel control-panel control-panel--wide">
-              <div className="panel-header">
-                <span className="panel-header-dot" />
-                <span className="panel-title">POOL LEVELS</span>
-              </div>
-              <div className="panel-body control-stack">
-                <div className="action-row">
-                  <button type="button" className="mini-action" onClick={() => setAllLevels(true)}>
-                    Select all levels
-                  </button>
-                  <button type="button" className="mini-action" onClick={() => setAllLevels(false)}>
-                    Clear levels
-                  </button>
-                </div>
-                <div className="level-groups">
-                  {LEVELS_BY_LAYER.map(group => {
-                    const groupKey = String(group.layer);
-                    const groupActive = selectedLayers[groupKey];
-
-                    return (
-                      <section key={groupKey} className={`layer-group${groupActive ? "" : " inactive"}`}>
-                        <div className="layer-group__header">
-                          <div className="layer-group__title">
-                            LAYER {group.layer} — {LAYERS[group.layer].name}
-                          </div>
-                          <div className="layer-group__meta">{group.levels.length} mapped levels</div>
-                        </div>
-                        <div className="level-chip-grid">
-                          {group.levels.map(level => {
-                            const active = selectedLevels[level.id];
-
-                            return (
-                              <button
-                                key={level.id}
-                                type="button"
-                                className={`level-chip${active ? " active" : ""}`}
-                                onClick={() => toggleLevel(level.id)}
-                              >
-                                <span className="level-chip__id">{level.id}</span>
-                                <span className="level-chip__name">{level.name}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </section>
-                    );
-                  })}
-                </div>
-              </div>
-            </section>
-
-            <section className="panel control-panel">
-              <div className="panel-header">
-                <span className="panel-header-dot" />
-                <span className="panel-title">CHALLENGE RULES</span>
-              </div>
-              <div className="panel-body control-stack">
-                <div className="toggle-stack">
-                  {[
-                    {
-                      title: "LEVEL CHALLENGES",
-                      value: includeBaseChallenges,
-                      setter: setIncludeBaseChallenges,
-                      hint: "Uses the base challenge lines already attached to each level.",
-                    },
-                    {
-                      title: "ADDITIONAL CHALLENGES",
-                      value: includeExtraChallenges,
-                      setter: setIncludeExtraChallenges,
-                      hint: "Adds extra randomized objectives from the shared pool.",
-                    },
-                    {
-                      title: "P-RANK",
-                      value: includePRank,
-                      setter: setIncludePRank,
-                      hint: "Adds a separate P-RANK objective to the output card.",
-                    },
-                  ].map(item => (
-                    <button
-                      key={item.title}
-                      type="button"
-                      className={`switch-row${item.value ? " active" : ""}`}
-                      onClick={() => item.setter(previous => !previous)}
-                    >
-                      <span className="switch-row__check" />
-                      <span className="switch-row__text">
-                        <span className="switch-row__title">{item.title}</span>
-                        <span className="switch-row__hint">{item.hint}</span>
-                      </span>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="slider-grid">
-                  <div className="slider-card">
-                    <div className="field-label-row">
-                      <span className="field-label">BASE CHANCE</span>
-                      <span className="field-value">{baseChance}%</span>
-                    </div>
-                    <input className="range-input" type="range" min={0} max={100} step={1} value={baseChance} onChange={event => setBaseChance(Number(event.target.value))} />
-                  </div>
-                  <div className="slider-card">
-                    <div className="field-label-row">
-                      <span className="field-label">EXTRA CHANCE</span>
-                      <span className="field-value">{extraChance}%</span>
-                    </div>
-                    <input className="range-input" type="range" min={0} max={100} step={1} value={extraChance} onChange={event => setExtraChance(Number(event.target.value))} />
-                  </div>
-                  <div className="slider-card">
-                    <div className="field-label-row">
-                      <span className="field-label">P-RANK CHANCE</span>
-                      <span className="field-value">{prankChance}%</span>
-                    </div>
-                    <input className="range-input" type="range" min={0} max={100} step={1} value={prankChance} onChange={event => setPrankChance(Number(event.target.value))} />
-                  </div>
-                </div>
-              </div>
-            </section>
-
+            {/* Execution parameters */}
             <section className="panel control-panel">
               <div className="panel-header">
                 <span className="panel-header-dot" />
@@ -527,9 +367,9 @@ export default function App() {
                     <span className="field-value">{count}</span>
                   </div>
                   <div className="number-control">
-                    <button className="num-btn" type="button" onClick={() => setCount(previous => Math.max(1, previous - 1))}>−</button>
+                    <button className="num-btn" type="button" onClick={() => setCount(p => Math.max(1, p - 1))}>−</button>
                     <div className="num-display">{count}</div>
-                    <button className="num-btn" type="button" onClick={() => setCount(previous => Math.min(maxCount, previous + 1))}>+</button>
+                    <button className="num-btn" type="button" onClick={() => setCount(p => Math.min(maxCount, p + 1))}>+</button>
                   </div>
                 </div>
 
@@ -538,7 +378,7 @@ export default function App() {
                     className="fire-btn"
                     type="button"
                     onClick={handleRoll}
-                    disabled={!includeNormal && !includeSecret && !includePrime && !includeBoss}
+                    disabled={nothingEnabled}
                   >
                     RANDOMIZE
                   </button>
@@ -546,6 +386,7 @@ export default function App() {
               </div>
             </section>
 
+            {/* Results */}
             {(results.length > 0 || noPool) && (
               <section className="panel results-panel" ref={resultRef}>
                 <div className="panel-header">
@@ -559,7 +400,7 @@ export default function App() {
                     <>
                       <div className="counter-bar">
                         <span className="counter-text">
-                          ROLL #{rollCount} - {results.length} LEVEL{results.length !== 1 ? "S" : ""} ASSIGNED
+                          ROLL #{rollCount} — {results.length} LEVEL{results.length !== 1 ? "S" : ""} ASSIGNED
                         </span>
                         <div className="separator" />
                         <span className="roll-count">[ STANDING BY<span className="blink">_</span> ]</span>
@@ -567,12 +408,16 @@ export default function App() {
 
                       <div className="result-list">
                         {results.map((level, index) => (
-                          <article key={`${rollCount}-${level.id}-${index}`} className="result-card" style={{ animationDelay: `${index * 0.08}s` }}>
+                          <article
+                            key={`${rollCount}-${level.id}-${index}`}
+                            className="result-card"
+                            style={{ animationDelay: `${index * 0.08}s` }}
+                          >
                             <div className="result-card__accent" style={{ background: LAYERS[level.layer].color }} />
                             <div className="result-card__content">
                               <div className="result-topline">
                                 <div>
-                                  <div className="result-layer">LAYER {level.layer} - {LAYERS[level.layer]?.name ?? "UNKNOWN"}</div>
+                                  <div className="result-layer">LAYER {level.layer} — {LAYERS[level.layer]?.name ?? "UNKNOWN"}</div>
                                   <div className="result-name">{level.name}</div>
                                   <div className="result-id">LEVEL {level.id}</div>
                                 </div>
@@ -582,13 +427,15 @@ export default function App() {
                                 </div>
                               </div>
 
-                              {(level.challenges.length > 0 || level.pRank) && (
+                              {(level.challenges.length > 0 || level.perfect_ranking) && (
                                 <div className="challenge-block">
                                   <div className="challenge-title">CHALLENGES</div>
                                   <div className="challenge-list">
-                                    {level.pRank && <span className="challenge-pill challenge-pill--prank">P-RANK</span>}
-                                    {level.challenges.map((challenge, challengeIndex) => (
-                                      <span key={`${level.id}-challenge-${challengeIndex}`} className="challenge-pill">
+                                    {level.perfect_ranking && (
+                                      <span className="challenge-pill challenge-pill--prank">P-RANK</span>
+                                    )}
+                                    {level.challenges.map((challenge, ci) => (
+                                      <span key={`${level.id}-ch-${ci}`} className="challenge-pill">
                                         {challenge.task}
                                       </span>
                                     ))}
@@ -606,9 +453,300 @@ export default function App() {
             )}
           </main>
 
-          <footer className="footer-bar">ULTRARANDOM // BLOOD ENGINE ACTIVE // BGM + RANDOMIZED POOL CONTROL</footer>
+          <footer className="footer-bar">
+            <p>ASSET ORIGIN: NEW BLOOD INTERACTIVE // ALL ORIGINAL ULTRAKILL ASSETS (AUDIO, SPRITES, MODELS)</p>
+            <p>{">>>"} ARE THE PROPERTY OF ARSI "HAKITA" PATALA & NEW BLOOD INTERACTIVE. {"<<<"}</p>
+          </footer>
         </div>
       </div>
+
+      {/* ── CORNER CONTROLS ────────────────────────────────────────────────── */}
+      <div className="corner-controls">
+        {/* Quick mute toggle */}
+        <button
+          type="button"
+          className={`corner-btn mute-btn${muted ? " mute-btn--muted" : ""}`}
+          onClick={toggleMute}
+          title={muted ? "Unmute audio" : "Mute audio"}
+          aria-label={muted ? "Unmute audio" : "Mute audio"}
+        >
+          <IconMute muted={muted} />
+        </button>
+
+        {/* Settings button */}
+        <button
+          type="button"
+          className="corner-btn settings-btn"
+          onClick={() => setSettingsOpen(true)}
+          title="Open settings"
+          aria-label="Open settings"
+        >
+          <IconSettings />
+          <span>SETTINGS</span>
+        </button>
+      </div>
+
+      {/* ── SETTINGS MODAL ──────────────────────────────────────────────────── */}
+      {settingsOpen && (
+        <div
+          className="settings-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Settings"
+          onClick={e => { if (e.target === e.currentTarget) setSettingsOpen(false); }}
+        >
+          <div className="settings-modal">
+            {/* Modal header */}
+            <div className="settings-modal__header">
+              <div className="settings-modal__title-row">
+                <span className="panel-header-dot" />
+                <span className="panel-title">SETTINGS</span>
+              </div>
+              <button
+                type="button"
+                className="settings-close"
+                onClick={() => setSettingsOpen(false)}
+                aria-label="Close settings"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Tab bar */}
+            <div className="settings-tabs" role="tablist">
+              {(
+                [
+                  { id: "visual" as SettingsTab, label: "VISUAL / AUDIO" },
+                  { id: "pool" as SettingsTab, label: "LEVEL POOL" },
+                  { id: "challenges" as SettingsTab, label: "CHALLENGES" },
+                ] as const
+              ).map(tab => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === tab.id}
+                  className={`settings-tab${activeTab === tab.id ? " settings-tab--active" : ""}`}
+                  onClick={() => setActiveTab(tab.id)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Tab content */}
+            <div className="settings-modal__body">
+
+              {/* ── VISUAL / AUDIO tab ──────────────────────────────────── */}
+              {activeTab === "visual" && (
+                <div className="control-stack">
+                  <div className="field-group">
+                    <div className="field-label-row">
+                      <span className="field-label">WALLPAPER</span>
+                      <span className="field-value">{background?.label ?? "Red Field"}</span>
+                    </div>
+                    <div className="background-grid">
+                      {BACKGROUNDS.map(item => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          className={`background-card${selectedBackground === item.id ? " active" : ""}`}
+                          onClick={() => setSelectedBackground(item.id)}
+                        >
+                          <span
+                            className="background-card__preview"
+                            style={item.image ? { backgroundImage: `url(${item.image})` } : undefined}
+                          >
+                            {item.image ? null : (
+                              <span className="background-card__preview-text">RED</span>
+                            )}
+                          </span>
+                          <span className="background-card__label">{item.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="field-group">
+                    <div className="field-label-row">
+                      <span className="field-label">BGM VOLUME</span>
+                      <span className="field-value">{muted ? "MUTED" : `${bgmVolume}%`}</span>
+                    </div>
+                    <input
+                      className="range-input"
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={bgmVolume}
+                      disabled={muted}
+                      onChange={e => setBgmVolume(Number(e.target.value))}
+                    />
+                    <div className="field-hint">
+                      bgm.ogg starts after your first interaction at 50%. Use the mute button (bottom-left) for quick toggle.
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── LEVEL POOL tab ──────────────────────────────────────── */}
+              {activeTab === "pool" && (
+                <div className="control-stack">
+                  {/* Layers */}
+                  <div className="field-group">
+                    <div className="field-label-row">
+                      <span className="field-label">POOL LAYERS</span>
+                    </div>
+                    <div className="action-row">
+                      <button type="button" className="mini-action" onClick={() => setAllLayers(true)}>Select all</button>
+                      <button type="button" className="mini-action" onClick={() => setAllLayers(false)}>Clear all</button>
+                    </div>
+                    <div className="layer-grid">
+                      {LAYER_ORDER.map(layer => {
+                        const layerData = LAYERS[layer];
+                        const active = selectedLayers[String(layer)];
+                        const levelCount = ALL_LEVELS.filter(l => l.layer === layer).length;
+
+                        return (
+                          <button
+                            key={String(layer)}
+                            type="button"
+                            className={`layer-card${active ? " active" : ""}`}
+                            onClick={() => setLayerSelection(layer, !active)}
+                          >
+                            <span className="layer-card__swatch" style={{ background: layerData.color }} />
+                            <span className="layer-card__meta">
+                              <span className="layer-card__name">LAYER {layer} — {layerData.name}</span>
+                              <span className="layer-card__count">{levelCount} levels</span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Individual levels */}
+                  <div className="field-group">
+                    <div className="field-label-row">
+                      <span className="field-label">POOL LEVELS</span>
+                    </div>
+                    <div className="action-row">
+                      <button type="button" className="mini-action" onClick={() => setAllLevels(true)}>Select all</button>
+                      <button type="button" className="mini-action" onClick={() => setAllLevels(false)}>Clear all</button>
+                    </div>
+                    <div className="level-groups">
+                      {LEVELS_BY_LAYER.map(group => {
+                        const groupKey = String(group.layer);
+                        const groupActive = selectedLayers[groupKey];
+
+                        return (
+                          <section
+                            key={groupKey}
+                            className={`layer-group${groupActive ? "" : " inactive"}`}
+                          >
+                            <div className="layer-group__header">
+                              <div className="layer-group__title">
+                                LAYER {group.layer} — {LAYERS[group.layer].name}
+                              </div>
+                              <div className="layer-group__meta">{group.levels.length} mapped levels</div>
+                            </div>
+                            <div className="level-chip-grid">
+                              {group.levels.map(level => {
+                                const active = selectedLevels[level.id];
+                                return (
+                                  <button
+                                    key={level.id}
+                                    type="button"
+                                    className={`level-chip${active ? " active" : ""}`}
+                                    onClick={() => toggleLevel(level.id)}
+                                  >
+                                    <span className="level-chip__id">{level.id}</span>
+                                    <span className="level-chip__name">{level.name}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </section>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── CHALLENGES tab ──────────────────────────────────────── */}
+              {activeTab === "challenges" && (
+                <div className="control-stack">
+                  <div className="toggle-stack">
+                    {(
+                      [
+                        {
+                          title: "LEVEL CHALLENGES",
+                          value: includeBaseChallenges,
+                          setter: setIncludeBaseChallenges,
+                          hint: "Uses the base challenge lines already attached to each level.",
+                        },
+                        {
+                          title: "ADDITIONAL CHALLENGES",
+                          value: includeExtraChallenges,
+                          setter: setIncludeExtraChallenges,
+                          hint: "Adds extra randomized objectives from the shared pool.",
+                        },
+                        {
+                          title: "P-RANK",
+                          value: includePRank,
+                          setter: setIncludePRank,
+                          hint: "Adds a separate P-RANK objective to the output card.",
+                        },
+                      ] as const
+                    ).map(item => (
+                      <button
+                        key={item.title}
+                        type="button"
+                        className={`switch-row${item.value ? " active" : ""}`}
+                        onClick={() => item.setter(prev => !prev)}
+                      >
+                        <span className="switch-row__check" />
+                        <span className="switch-row__text">
+                          <span className="switch-row__title">{item.title}</span>
+                          <span className="switch-row__hint">{item.hint}</span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="slider-grid">
+                    {(
+                      [
+                        { label: "BASE CHANCE", value: baseChance, set: setBaseChance },
+                        { label: "EXTRA CHANCE", value: extraChance, set: setExtraChance },
+                        { label: "P-RANK CHANCE", value: prankChance, set: setPrankChance },
+                      ] as const
+                    ).map(item => (
+                      <div key={item.label} className="slider-card">
+                        <div className="field-label-row">
+                          <span className="field-label">{item.label}</span>
+                          <span className="field-value">{item.value}%</span>
+                        </div>
+                        <input
+                          className="range-input"
+                          type="range"
+                          min={0}
+                          max={100}
+                          step={1}
+                          value={item.value}
+                          onChange={e => item.set(Number(e.target.value))}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            </div>{/* end settings-modal__body */}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
