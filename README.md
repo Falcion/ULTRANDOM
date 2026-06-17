@@ -1,75 +1,29 @@
-# React + TypeScript + Vite
+# ULTRANDOM project
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+*MANKIND IS ACCIDENT. UNCERTAINTY IS FUEL. FORTUNE IS FULL.
+Make your act of violence random and spread blood in unique ways,
+'cause there is no predictability in gore and there is no understanding in brutality.*
 
-Currently, two official plugins are available:
+ULTRANDOM is my little fun project designed to diversify the gameplay by choosing random levels + challenges.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+![preview](./img/preview.png)
 
-## React Compiler
+ULTRANDOM allows you to filter out locations, layers, pull up P-rank randomization factors, etc., all so that you can train/play
+ULTRAKILL even more randomly than ever.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## How to build and run
 
-Note: This will impact Vite dev & build performances.
+1. Install source of the project in any comfortable way.
+2. Install dependencies of the project:
 
-## Expanding the ESLint configuration
+    ```powershell
+    npm i
+    ```
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+3. Run project in development mode:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+    ```powershell
+    npm run dev
+    ```
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+4. Go to <http://localhost:5173/> (or network address if you used `--host`) and use/contribute to this project.

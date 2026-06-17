@@ -44,13 +44,13 @@ export const LEVELS: Record<string, LEVEL> = {
     "0-4": { id: "0-4", name: "A ONE-MACHINE ARMY", layer: 0, type: "NORMAL", challenges: [{ "task": "Slide uninterrupted for 17 seconds", "type": "IN-GAME" }] },
     "0-5": { id: "0-5", name: "CERBERUS", layer: 0, type: "BOSS", challenges: [{ "task": "Don't inflict fatal damage to any enemy", "type": "IN-GAME" }] },
     "0-S": { id: "0-S", name: "SOMETHING WICKED", layer: 0, type: "SECRET", challenges: [{ "task": "Not shitting yourself", "type": "IN-GAME" }] },
-    "0-E": { id: "0-E", name: "THIS HEAT, AN EVIL HEAT", layer: 0, type: "NORMAL", challenges: [] },
+    "0-E": { id: "0-E", name: "THIS HEAT, AN EVIL HEAT", layer: 0, type: "ENCORES", challenges: [] },
     // LIMBO    
     "1-1": { id: "1-1", name: "HEART OF THE SUNRISE", layer: 1, type: "NORMAL", challenges: [{ "task": "Complete the level in under 10 seconds", "type": "IN-GAME" }] },
     "1-2": { id: "1-2", name: "THE BURNING WORLD", layer: 1, type: "NORMAL", challenges: [{ "task": "Do not pick up any skulls", "type": "IN-GAME" }] },
     "1-3": { id: "1-3", name: "HALLS OF SACRED REMAINS", layer: 1, type: "NORMAL", challenges: [{ "task": "Beat the secret encounter", "type": "IN-GAME" }] }, "1-4": { id: "1-4", name: "CLAIR DE LUNE", layer: 1, type: "BOSS", challenges: [{ "task": "Do not pick up any skulls", "type": "IN-GAME" }] },
     "1-S": { id: "1-S", name: "THE WITLESS", layer: 1, type: "SECRET", challenges: [{ "task": "DON'T LOOK UP THE ANSWERS", "type": "IN-GAME" }] },
-    "1-E": { id: "1-E", name: "...THEN FELL THE ASHES", layer: 1, type: "NORMAL", challenges: [] },
+    "1-E": { id: "1-E", name: "...THEN FELL THE ASHES", layer: 1, type: "ENCORES", challenges: [] },
     // LUST
     "2-1": { id: "2-1", name: "BRIDGEBURNER", layer: 2, type: "NORMAL", challenges: [{ "task": "Don't open any normal doors", "type": "IN-GAME" }] },
     "2-2": { id: "2-2", name: "DEATH AT 20,000 VOLTS", layer: 2, type: "NORMAL", challenges: [{ "task": "Beat the level in under 60 seconds", "type": "IN-GAME" }] },

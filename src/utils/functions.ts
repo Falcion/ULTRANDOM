@@ -14,6 +14,15 @@ import {
     CHANCE_OF_CHALLENGE,
 } from "@const/variables";
 
+type ChallengeRollOptions = {
+    includeBaseChallenges?: boolean;
+    includeExtraChallenges?: boolean;
+    includePRank?: boolean;
+    baseChance?: number;
+    extraChance?: number;
+    prankChance?: number;
+};
+
 export function shuffle<T>(arr: T[]): T[] {
     const a = [...arr];
     for (let i = a.length - 1; i > 0; i--) {
@@ -23,31 +32,46 @@ export function shuffle<T>(arr: T[]): T[] {
     return a;
 }
 
-export function shuffleChallenges(level: LEVEL, base = true, extra = true): CHALLENGE_DATA {
+export function shuffleChallenges(level: LEVEL, options: ChallengeRollOptions = {}): CHALLENGE_DATA {
+    const {
+        includeBaseChallenges = true,
+        includeExtraChallenges = true,
+        includePRank = true,
+        baseChance = CHANCE_OF_CHALLENGE,
+        extraChance = CHANCE_OF_EXTRA_CHALLENGE,
+        prankChance = CHANCE_OF_PRANK_CHALLENGE,
+    } = options;
+
     const BASIC_CHALLENGES: CHALLENGE[] = [];
     const EXTRA_CHALLENGES: CHALLENGE[] = [];
 
-    if (base && level.challenges) {
+    if (includeBaseChallenges && level.challenges) {
         for (const challenge of level.challenges) {
-            if (Math.random() < CHANCE_OF_CHALLENGE)
+            if (Math.random() < baseChance)
                 BASIC_CHALLENGES.push(challenge);
         }
     }
 
-    if (extra) {
+    if (includeExtraChallenges) {
         const shuffled = shuffle<CHALLENGE>(CHALLENGES_EXTRA);
 
-        while (EXTRA_CHALLENGES.length < AMOUNT_OF_EXTRA_CHALLENGES_MIN) {
-            for (const challenge of shuffled) {
-                if (EXTRA_CHALLENGES.length >= AMOUNT_OF_EXTRA_CHALLENGES_MAX) break;
+        for (const challenge of shuffled) {
+            if (EXTRA_CHALLENGES.length >= AMOUNT_OF_EXTRA_CHALLENGES_MAX) break;
 
-                if (Math.random() < CHANCE_OF_EXTRA_CHALLENGE)
-                    EXTRA_CHALLENGES.push(challenge);
+            if (Math.random() < extraChance)
+                EXTRA_CHALLENGES.push(challenge);
+        }
+
+        if (EXTRA_CHALLENGES.length < AMOUNT_OF_EXTRA_CHALLENGES_MIN) {
+            for (const challenge of shuffled) {
+                if (EXTRA_CHALLENGES.length >= AMOUNT_OF_EXTRA_CHALLENGES_MIN) break;
+                if (EXTRA_CHALLENGES.includes(challenge)) continue;
+                EXTRA_CHALLENGES.push(challenge);
             }
         }
     }
 
-    const PERFECT_RANKING_CHANCE = Math.random() < CHANCE_OF_PRANK_CHALLENGE;
+    const PERFECT_RANKING_CHANCE = includePRank ? Math.random() < prankChance : false;
 
     return { challenges: [...BASIC_CHALLENGES, ...EXTRA_CHALLENGES], perfect_ranking: PERFECT_RANKING_CHANCE };
 }

@@ -23,8 +23,14 @@ export type LEVEL_TYPE =
     | "NORMAL"
     | "SECRET"
     | "PRIME"
-    | "BOSS";
+    | "BOSS"
+    | "ENCORES";
 
+export type LEVEL_TYPEDATA = {
+    label: string;
+    image: string;
+    accent: string
+}
 
 export type CHALLENGE = {
     task: string;
@@ -43,3 +49,5 @@ export type CHALLENGE_DATA = {
     challenges: CHALLENGE[];
     perfect_ranking: boolean;
 }
+
+export type EnrichedLevel = LEVEL & { challenges: CHALLENGE[]; perfect_ranking: boolean };
