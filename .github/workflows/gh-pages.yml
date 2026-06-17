@@ -6,6 +6,8 @@ on:
   push:
     branches:
       - main # Runs when pushing to main
+  pull_request:
+    branches: ["main"]
 
 permissions:
   contents: write # Ensure GitHub Actions can push to gh-pages
