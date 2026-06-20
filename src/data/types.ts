@@ -50,4 +50,18 @@ export type CHALLENGE_DATA = {
     perfect_ranking: boolean;
 }
 
-export type EnrichedLevel = LEVEL & { challenges: CHALLENGE[]; perfect_ranking: boolean };
+export type DIFFICULTY = {
+    id: number;
+    name:
+    | "HARMLESS"
+    | "LENIENT"
+    | "STANDARD"
+    | "VIOLENT"
+    | "BRUTAL"
+}
+
+export type EnrichedLevel = LEVEL & {
+    challenges: CHALLENGE[];
+    difficulty?: DIFFICULTY;
+    perfect_ranking: boolean
+};

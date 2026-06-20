@@ -31,6 +31,7 @@ import type {
 } from "@utils/pages/visuals";
 
 import "./App.css";
+import { DIFFICULTIES } from "@data/difficulties";
 
 const LEVEL_TYPE_META: Record<LEVEL_TYPE, LEVEL_TYPEDATA> = {
   NORMAL: {
@@ -90,6 +91,7 @@ export default function App() {
   const [includePrime, setIncludePrime] = useState(false);
   const [includeBoss, setIncludeBoss] = useState(false);
   const [includeEncores, setIncludeEncores] = useState(false);
+  const [includeDifficulties, setIncludeDifficulties] = useState(true);
 
   // Pool selection (inside settings)
   const [selectedLayers, setSelectedLayers] = useState<Record<string, boolean>>(
@@ -97,6 +99,9 @@ export default function App() {
   );
   const [selectedLevels, setSelectedLevels] = useState<Record<string, boolean>>(
     () => createSelectionMap(ALL_LEVELS.map(level => level.id)),
+  );
+  const [selectedDifficulties, setSeletedDifficulties] = useState<Record<string, boolean>>(
+    () => createSelectionMap(DIFFICULTIES.map(diff => diff.id)),
   );
 
   // Count + results
@@ -209,6 +214,9 @@ export default function App() {
   const toggleLevel = (levelId: string) =>
     setSelectedLevels(prev => ({ ...prev, [levelId]: !prev[levelId] }));
 
+  const toggleDifficulty = (diffId: number) =>
+    setSeletedDifficulties(prev => ({ ...prev, [diffId]: !prev[diffId] }));
+
   // ── Roll ──────────────────────────────────────────────────────────────────
   const handleRoll = () => {
     const pool = ALL_LEVELS.filter(level => {
@@ -240,6 +248,8 @@ export default function App() {
     const shuffled = shuffle(pool);
     const picked = shuffled.slice(0, Math.min(count, pool.length));
 
+    const difficulties = DIFFICULTIES.filter(diff => selectedDifficulties[diff.id]);
+
     const challengeConfig: ChallengeRollConfig = {
       includeBaseChallenges,
       includeExtraChallenges,
@@ -251,7 +261,12 @@ export default function App() {
 
     const enriched = picked.map(level => {
       const challengesData = shuffleChallenges(level, challengeConfig);
-      return { ...level, challenges: challengesData.challenges, perfect_ranking: challengesData.perfect_ranking };
+      return {
+        ...level,
+        challenges: challengesData.challenges,
+        difficulty: difficulties.length > 0 ? shuffle(difficulties)[0] : undefined,
+        perfect_ranking: challengesData.perfect_ranking,
+      };
     });
 
     setResults(enriched);
@@ -285,6 +300,17 @@ export default function App() {
   }).length;
 
   const nothingEnabled = !includeNormal && !includeSecret && !includePrime && !includeBoss && !includeEncores;
+  const nothingEnabled =
+    (
+      !includeNormal &&
+      !includeSecret &&
+      !includePrime &&
+      !includeBoss &&
+      !includeEncores) ||
+    (
+      includeDifficulties &&
+      DIFFICULTIES.filter(diff => selectedDifficulties[diff.id]).length < 1
+    );
 
   // Close settings on Escape
   useEffect(() => {
@@ -382,6 +408,27 @@ export default function App() {
                   >
                     RANDOMIZE
                   </button>
+                  <div className="field-group">
+                    <span className="field-label">DIFFICULTIES</span>
+                    <div className="level-chip-grid">
+                      {
+                        DIFFICULTIES.map(diff => {
+                          const active = selectedDifficulties[diff.id];
+                          return (
+                            <button
+                              key={diff.id}
+                              type="button"
+                              className={`type-card${active ? " active" : ""}`}
+                              onClick={() => toggleDifficulty(diff.id)}
+                            >
+                              <span className="level-chip__name">{diff.name}</span>
+
+                            </button>
+                          )
+                        })
+                      }
+                    </div>
+                  </div>
                 </div>
               </div>
             </section>
@@ -419,7 +466,7 @@ export default function App() {
                                 <div>
                                   <div className="result-layer">LAYER {level.layer} — {LAYERS[level.layer]?.name ?? "UNKNOWN"}</div>
                                   <div className="result-name">{level.name}</div>
-                                  <div className="result-id">LEVEL {level.id}</div>
+                                  <div className="result-id">LEVEL {level.id} {level.difficulty ? `(${level.difficulty.name})` : ''}</div>
                                 </div>
                                 <div className={`type-badge type-badge--${LEVEL_TYPE_META[level.type].accent}`}>
                                   <img className="type-badge__icon" src={LEVEL_TYPE_META[level.type].image} alt="" aria-hidden="true" />
@@ -738,6 +785,32 @@ export default function App() {
                           onChange={e => item.set(Number(e.target.value))}
                         />
                       </div>
+                    ))}
+                  </div>
+
+                  <div className="toggle-stack">
+                    {(
+                      [
+                        {
+                          title: "DIFFICULTIES",
+                          value: includeDifficulties,
+                          setter: setIncludeDifficulties,
+                          hint: "Enable difficulty randomizer for each level.",
+                        },
+                      ] as const
+                    ).map(item => (
+                      <button
+                        key={item.title}
+                        type="button"
+                        className={`switch-row${item.value ? " active" : ""}`}
+                        onClick={() => item.setter(prev => !prev)}
+                      >
+                        <span className="switch-row__check" />
+                        <span className="switch-row__text">
+                          <span className="switch-row__title">{item.title}</span>
+                          <span className="switch-row__hint">{item.hint}</span>
+                        </span>
+                      </button>
                     ))}
                   </div>
                 </div>
