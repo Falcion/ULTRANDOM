@@ -39,6 +39,7 @@ import { createSelectionMap, percentToFloat } from "@utils/pages/helpers";
 
 import "./App.css";
 import { Hero } from './components/panels/Hero';
+import { Footer } from "@components/panels/Footer";
 
 export default function App() {
   // Main filters (visible on home page)
@@ -446,11 +447,7 @@ export default function App() {
               </section>
             )}
           </main>
-
-          <footer className="footer-bar">
-            <p>ASSET ORIGIN: NEW BLOOD INTERACTIVE // ALL ORIGINAL ULTRAKILL ASSETS (AUDIO, SPRITES, MODELS)</p>
-            <p>{">>>"} ARE THE PROPERTY OF ARSI "HAKITA" PATALA & NEW BLOOD INTERACTIVE. {"<<<"}</p>
-          </footer>
+          <Footer />
         </div>
       </div>
 

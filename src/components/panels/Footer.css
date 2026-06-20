@@ -1,0 +1,9 @@
+.footer-bar {
+  max-width: 1280px;
+  margin: 18px auto 0;
+  padding: 16px 6px 0;
+  text-align: center;
+  color: rgba(255, 220, 220, 0.42);
+  font-family: "VT323", monospace;
+  letter-spacing: 0.2em;
+}
