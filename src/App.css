@@ -97,137 +97,6 @@ img {
   overflow: hidden;
 }
 
-.hero-panel {
-  max-width: 1280px;
-  margin: 0 auto 22px;
-  padding: 0 0 28px;
-  /* Blood bar across the very top */
-  border-top: 3px solid var(--accent);
-  box-shadow:
-    var(--shadow),
-    0 -2px 0 rgba(255, 43, 43, 0.3),
-    inset 0 0 80px rgba(255, 0, 0, 0.04);
-}
-
-/* Bleed glow under the top bar */
-.hero-panel::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
-  background: linear-gradient(180deg, rgba(255, 0, 0, 0.12), transparent);
-  pointer-events: none;
-}
-
-.hero-panel__topline {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding: 14px 24px 0;
-}
-
-.hero-tag {
-  font-size: 0.78rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: #ff8c8c;
-}
-
-.hero-tag--muted {
-  color: #caa3a3;
-}
-
-.hero-title {
-  margin: 8px 0 10px;
-  padding: 0 24px;
-  font-family: "VT323", monospace;
-  font-size: clamp(3.6rem, 10vw, 7rem);
-  line-height: 0.9;
-  letter-spacing: 0.08em;
-  color: var(--accent);
-  text-shadow:
-    0 0 14px rgba(255, 43, 43, 0.9),
-    0 0 40px rgba(255, 43, 43, 0.45),
-    0 0 90px rgba(255, 0, 0, 0.15),
-    2px 2px 0 rgba(80, 0, 0, 0.6);
-  animation: heroGlitch 8s infinite;
-}
-
-@keyframes heroGlitch {
-  0%,
-  88%,
-  100% {
-    text-shadow:
-      0 0 14px rgba(255, 43, 43, 0.9),
-      0 0 40px rgba(255, 43, 43, 0.45),
-      0 0 90px rgba(255, 0, 0, 0.15),
-      2px 2px 0 rgba(80, 0, 0, 0.6);
-    transform: none;
-  }
-  89% {
-    transform: translate(-2px, 0);
-    text-shadow:
-      3px 0 #00eeff,
-      -3px 0 #ff0055,
-      0 0 20px rgba(255, 43, 43, 0.9);
-  }
-  90% {
-    transform: translate(3px, -1px);
-    text-shadow:
-      -2px 0 #00eeff,
-      2px 0 #ff0055;
-  }
-  91% {
-    transform: translate(-1px, 0);
-    text-shadow:
-      2px 0 14px rgba(255, 43, 43, 0.9),
-      0 0 40px rgba(255, 43, 43, 0.45);
-  }
-  92% {
-    transform: none;
-  }
-  93% {
-    transform: translate(2px, 0);
-    filter: brightness(1.4);
-  }
-  94% {
-    transform: none;
-    filter: none;
-  }
-}
-
-/* Diagonal slash divider below title */
-.hero-slash {
-  position: relative;
-  height: 2px;
-  margin: 0 24px 16px;
-  background: linear-gradient(90deg, var(--accent), rgba(255, 43, 43, 0.1));
-  overflow: visible;
-}
-
-.hero-slash::after {
-  content: "// ";
-  position: absolute;
-  right: 0;
-  top: -10px;
-  font-family: "VT323", monospace;
-  font-size: 1.1rem;
-  color: rgba(255, 43, 43, 0.3);
-  letter-spacing: 0.1em;
-}
-
-.hero-copy {
-  max-width: 68ch;
-  font-size: 0.92rem;
-  line-height: 1.65;
-  color: var(--muted);
-  margin: 0;
-  padding: 0 24px;
-}
-
 .dashboard-grid {
   max-width: 1280px;
   margin: 0 auto;
@@ -990,13 +859,8 @@ img {
     padding-inline: 12px;
   }
 
-  .hero-panel,
   .panel-body {
     padding-inline: 14px;
-  }
-
-  .hero-panel__topline {
-    flex-direction: column;
   }
 
   .type-grid,

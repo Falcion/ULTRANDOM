@@ -1,88 +1,44 @@
 import { useEffect, useRef, useState } from "react";
 
 import {
+  ALL_LEVELS,
+  LAYERS_ORDER,
   LAYERS,
-  LEVELS
+  LEVELS_BY_LAYER,
 } from "@data/locations";
 
 import type {
-  LEVEL_TYPE,
-  LEVEL_TYPEDATA,
   EnrichedLevel,
+  LEVEL_TYPE
 } from "@data/types";
-
-import type {
-  ChallengeRollConfig
-} from "@utils/types";
-
-import {
-  shuffle,
-  shuffleChallenges
-} from "@utils/functions";
 
 import {
   IconMute,
   IconSettings
 } from '@components/svg/Icons';
 
+import { DIFFICULTIES } from "@data/difficulties";
+
+import {
+  shuffle,
+  shuffleChallenges
+} from "@utils/functions";
+
+import type {
+  ChallengeRollConfig
+} from "@utils/types";
+
 import type {
   SettingsTab,
   BackgroundChoice
-} from "@utils/pages/visuals";
+} from "@utils/pages/types";
+
+import { BACKGROUNDS, LEVEL_TYPE_META } from "@utils/pages/data";
+
+import { createSelectionMap, percentToFloat } from "@utils/pages/helpers";
 
 import "./App.css";
-import { DIFFICULTIES } from "@data/difficulties";
-
-const LEVEL_TYPE_META: Record<LEVEL_TYPE, LEVEL_TYPEDATA> = {
-  NORMAL: {
-    label: "NORMAL",
-    image: "/media/images/normal.png",
-    accent: "normal",
-  },
-  SECRET: {
-    label: "SECRET",
-    image: "/media/images/secret.svg",
-    accent: "secret",
-  },
-  PRIME: {
-    label: "PRIME SANCTUMS",
-    image: "/media/images/prime.png",
-    accent: "prime",
-  },
-  BOSS: {
-    label: "BOSS",
-    image: "/media/images/boss.png",
-    accent: "boss",
-  },
-  ENCORES: {
-    label: "ENCORES",
-    image: "/media/images/encore.png",
-    accent: "encores"
-  }
-};
-
-const LAYER_ORDER: Array<number | "P"> = [0, 1, 2, 3, 4, 5, 6, 7, 8, "P"];
-const BACKGROUNDS: Array<{ id: BackgroundChoice; label: string; image?: string }> = [
-  { id: "red", label: "Red Field" },
-  { id: "storm", label: "Storm Wall", image: "/background/1350597.jpeg" },
-  { id: "rust", label: "Rust Veil", image: "/background/1347555.jpeg" },
-  { id: "ash", label: "Ash Grid", image: "/background/1270683.png" },
-  { id: "catacombs", label: "Catacombs", image: "/background/1168975.png" },
-];
-
-const ALL_LEVELS = Object.values(LEVELS);
-const LEVELS_BY_LAYER = LAYER_ORDER.map(layer => ({
-  layer,
-  levels: ALL_LEVELS.filter(level => level.layer === layer),
-}));
-
-function createSelectionMap(keys: readonly (string | number)[], initialValue = true) {
-  return Object.fromEntries(keys.map(key => [String(key), initialValue])) as Record<string, boolean>;
-}
-
-function percentToFloat(value: number) {
-  return value / 100;
-}
+import { Hero } from './components/panels/Hero';
 
 export default function App() {
   // Main filters (visible on home page)
@@ -95,7 +51,7 @@ export default function App() {
 
   // Pool selection (inside settings)
   const [selectedLayers, setSelectedLayers] = useState<Record<string, boolean>>(
-    () => createSelectionMap(LAYER_ORDER),
+    () => createSelectionMap(LAYERS_ORDER),
   );
   const [selectedLevels, setSelectedLevels] = useState<Record<string, boolean>>(
     () => createSelectionMap(ALL_LEVELS.map(level => level.id)),
@@ -197,7 +153,7 @@ export default function App() {
   const setAllLayers = (value: boolean) =>
     setSelectedLayers(prev => {
       const next = { ...prev };
-      for (const layer of LAYER_ORDER) next[String(layer)] = value;
+      for (const layer of LAYERS_ORDER) next[String(layer)] = value;
       return next;
     });
 
@@ -290,7 +246,7 @@ export default function App() {
         backgroundImage: `linear-gradient(180deg, rgba(4,0,0,0.7), rgba(12,0,0,0.85)), url(${background?.image ?? ""})`,
       };
 
-  const selectedLayerCount = LAYER_ORDER.filter(l => selectedLayers[String(l)]).length;
+  const selectedLayerCount = LAYERS_ORDER.filter(l => selectedLayers[String(l)]).length;
   const selectedLevelCount = ALL_LEVELS.filter(l => selectedLevels[l.id]).length;
   const filteredLevelCount = ALL_LEVELS.filter(level => {
     if (level.type === "NORMAL" && !includeNormal) return false;
@@ -330,19 +286,7 @@ export default function App() {
 
       <div className="scanlines">
         <div className="app-frame">
-
-          {/* HERO */}
-          <header className="hero-panel panel">
-            <div className="hero-panel__topline">
-              <div className="hero-tag">ULTRAKILL LEVEL RANDOMIZER</div>
-              <div className="hero-tag hero-tag--muted">BOILING BLOOD...</div>
-            </div>
-            <h1 className="hero-title">ULTRANDOM</h1>
-            <p className="hero-copy">
-              Select level types, set the count, and parry RANDOMIZE. Open SETTINGS to tune the pool, wallpaper, audio, and challenge odds.
-            </p>
-          </header>
-
+          <Hero />
           {/* ── MAIN GRID ────────────────────────────────────────────────── */}
           <main className="dashboard-grid">
 
@@ -537,310 +481,312 @@ export default function App() {
       </div>
 
       {/* ── SETTINGS MODAL ──────────────────────────────────────────────────── */}
-      {settingsOpen && (
-        <div
-          className="settings-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Settings"
-          onClick={e => { if (e.target === e.currentTarget) setSettingsOpen(false); }}
-        >
-          <div className="settings-modal">
-            {/* Modal header */}
-            <div className="settings-modal__header">
-              <div className="settings-modal__title-row">
-                <span className="panel-header-dot" />
-                <span className="panel-title">SETTINGS</span>
-              </div>
-              <button
-                type="button"
-                className="settings-close"
-                onClick={() => setSettingsOpen(false)}
-                aria-label="Close settings"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Tab bar */}
-            <div className="settings-tabs" role="tablist">
-              {(
-                [
-                  { id: "visual" as SettingsTab, label: "VISUAL / AUDIO" },
-                  { id: "pool" as SettingsTab, label: "LEVEL POOL" },
-                  { id: "challenges" as SettingsTab, label: "CHALLENGES" },
-                ] as const
-              ).map(tab => (
+      {
+        settingsOpen && (
+          <div
+            className="settings-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Settings"
+            onClick={e => { if (e.target === e.currentTarget) setSettingsOpen(false); }}
+          >
+            <div className="settings-modal">
+              {/* Modal header */}
+              <div className="settings-modal__header">
+                <div className="settings-modal__title-row">
+                  <span className="panel-header-dot" />
+                  <span className="panel-title">SETTINGS</span>
+                </div>
                 <button
-                  key={tab.id}
                   type="button"
-                  role="tab"
-                  aria-selected={activeTab === tab.id}
-                  className={`settings-tab${activeTab === tab.id ? " settings-tab--active" : ""}`}
-                  onClick={() => setActiveTab(tab.id)}
+                  className="settings-close"
+                  onClick={() => setSettingsOpen(false)}
+                  aria-label="Close settings"
                 >
-                  {tab.label}
+                  ✕
                 </button>
-              ))}
-            </div>
+              </div>
 
-            {/* Tab content */}
-            <div className="settings-modal__body">
+              {/* Tab bar */}
+              <div className="settings-tabs" role="tablist">
+                {(
+                  [
+                    { id: "visual" as SettingsTab, label: "VISUAL / AUDIO" },
+                    { id: "pool" as SettingsTab, label: "LEVEL POOL" },
+                    { id: "challenges" as SettingsTab, label: "CHALLENGES" },
+                  ] as const
+                ).map(tab => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeTab === tab.id}
+                    className={`settings-tab${activeTab === tab.id ? " settings-tab--active" : ""}`}
+                    onClick={() => setActiveTab(tab.id)}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
 
-              {/* ── VISUAL / AUDIO tab ──────────────────────────────────── */}
-              {activeTab === "visual" && (
-                <div className="control-stack">
-                  <div className="field-group">
-                    <div className="field-label-row">
-                      <span className="field-label">WALLPAPER</span>
-                      <span className="field-value">{background?.label ?? "Red Field"}</span>
-                    </div>
-                    <div className="background-grid">
-                      {BACKGROUNDS.map(item => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          className={`background-card${selectedBackground === item.id ? " active" : ""}`}
-                          onClick={() => setSelectedBackground(item.id)}
-                        >
-                          <span
-                            className="background-card__preview"
-                            style={item.image ? { backgroundImage: `url(${item.image})` } : undefined}
+              {/* Tab content */}
+              <div className="settings-modal__body">
+
+                {/* ── VISUAL / AUDIO tab ──────────────────────────────────── */}
+                {activeTab === "visual" && (
+                  <div className="control-stack">
+                    <div className="field-group">
+                      <div className="field-label-row">
+                        <span className="field-label">WALLPAPER</span>
+                        <span className="field-value">{background?.label ?? "Red Field"}</span>
+                      </div>
+                      <div className="background-grid">
+                        {BACKGROUNDS.map(item => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            className={`background-card${selectedBackground === item.id ? " active" : ""}`}
+                            onClick={() => setSelectedBackground(item.id)}
                           >
-                            {item.image ? null : (
-                              <span className="background-card__preview-text">RED</span>
-                            )}
+                            <span
+                              className="background-card__preview"
+                              style={item.image ? { backgroundImage: `url(${item.image})` } : undefined}
+                            >
+                              {item.image ? null : (
+                                <span className="background-card__preview-text">RED</span>
+                              )}
+                            </span>
+                            <span className="background-card__label">{item.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="field-group">
+                      <div className="field-label-row">
+                        <span className="field-label">BGM VOLUME</span>
+                        <span className="field-value">{muted ? "MUTED" : `${bgmVolume}%`}</span>
+                      </div>
+                      <input
+                        className="range-input"
+                        type="range"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={bgmVolume}
+                        disabled={muted}
+                        onChange={e => setBgmVolume(Number(e.target.value))}
+                      />
+                      <div className="field-hint">
+                        bgm.ogg starts after your first interaction at 50%. Use the mute button (bottom-left) for quick toggle.
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── LEVEL POOL tab ──────────────────────────────────────── */}
+                {activeTab === "pool" && (
+                  <div className="control-stack">
+                    {/* Layers */}
+                    <div className="field-group">
+                      <div className="field-label-row">
+                        <span className="field-label">POOL LAYERS</span>
+                      </div>
+                      <div className="action-row">
+                        <button type="button" className="mini-action" onClick={() => setAllLayers(true)}>Select all</button>
+                        <button type="button" className="mini-action" onClick={() => setAllLayers(false)}>Clear all</button>
+                      </div>
+                      <div className="layer-grid">
+                        {LAYERS_ORDER.map(layer => {
+                          const layerData = LAYERS[layer];
+                          const active = selectedLayers[String(layer)];
+                          const levelCount = ALL_LEVELS.filter(l => l.layer === layer).length;
+
+                          return (
+                            <button
+                              key={String(layer)}
+                              type="button"
+                              className={`layer-card${active ? " active" : ""}`}
+                              onClick={() => setLayerSelection(layer, !active)}
+                            >
+                              <span className="layer-card__swatch" style={{ background: layerData.color }} />
+                              <span className="layer-card__meta">
+                                <span className="layer-card__name">LAYER {layer} — {layerData.name}</span>
+                                <span className="layer-card__count">{levelCount} levels</span>
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Individual levels */}
+                    <div className="field-group">
+                      <div className="field-label-row">
+                        <span className="field-label">POOL LEVELS</span>
+                      </div>
+                      <div className="action-row">
+                        <button type="button" className="mini-action" onClick={() => setAllLevels(true)}>Select all</button>
+                        <button type="button" className="mini-action" onClick={() => setAllLevels(false)}>Clear all</button>
+                      </div>
+                      <div className="level-groups">
+                        {LEVELS_BY_LAYER.map(group => {
+                          const groupKey = String(group.layer);
+                          const groupActive = selectedLayers[groupKey];
+
+                          return (
+                            <section
+                              key={groupKey}
+                              className={`layer-group${groupActive ? "" : " inactive"}`}
+                            >
+                              <div className="layer-group__header">
+                                <div className="layer-group__title">
+                                  LAYER {group.layer} — {LAYERS[group.layer].name}
+                                </div>
+                                <div className="layer-group__meta">{group.levels.length} mapped levels</div>
+                              </div>
+                              <div className="level-chip-grid">
+                                {group.levels.map(level => {
+                                  const active = selectedLevels[level.id];
+                                  return (
+                                    <button
+                                      key={level.id}
+                                      type="button"
+                                      className={`level-chip${active ? " active" : ""}`}
+                                      onClick={() => toggleLevel(level.id)}
+                                    >
+                                      <span className="level-chip__id">{level.id}</span>
+                                      <span className="level-chip__name">{level.name}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </section>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── CHALLENGES tab ──────────────────────────────────────── */}
+                {activeTab === "challenges" && (
+                  <div className="control-stack">
+                    <div className="toggle-stack">
+                      {(
+                        [
+                          {
+                            title: "LEVEL CHALLENGES",
+                            value: includeBaseChallenges,
+                            setter: setIncludeBaseChallenges,
+                            hint: "Uses the base challenge lines already attached to each level.",
+                          },
+                          {
+                            title: "ADDITIONAL CHALLENGES",
+                            value: includeExtraChallenges,
+                            setter: setIncludeExtraChallenges,
+                            hint: "Adds extra randomized objectives from the shared pool.",
+                          },
+                          {
+                            title: "P-RANK",
+                            value: includePRank,
+                            setter: setIncludePRank,
+                            hint: "Adds a separate P-RANK objective to the output card.",
+                          },
+                        ] as const
+                      ).map(item => (
+                        <button
+                          key={item.title}
+                          type="button"
+                          className={`switch-row${item.value ? " active" : ""}`}
+                          onClick={() => item.setter(prev => !prev)}
+                        >
+                          <span className="switch-row__check" />
+                          <span className="switch-row__text">
+                            <span className="switch-row__title">{item.title}</span>
+                            <span className="switch-row__hint">{item.hint}</span>
                           </span>
-                          <span className="background-card__label">{item.label}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="slider-grid">
+                      {(
+                        [
+                          { label: "BASE CHANCE", value: baseChance, set: setBaseChance },
+                          { label: "EXTRA CHANCE", value: extraChance, set: setExtraChance },
+                          { label: "P-RANK CHANCE", value: prankChance, set: setPrankChance },
+                        ] as const
+                      ).map(item => (
+                        <div key={item.label} className="slider-card">
+                          <div className="field-label-row">
+                            <span className="field-label">{item.label}</span>
+                            <span className="field-value">{item.value}%</span>
+                          </div>
+                          <input
+                            className="range-input"
+                            type="range"
+                            min={0}
+                            max={100}
+                            step={1}
+                            value={item.value}
+                            onChange={e => item.set(Number(e.target.value))}
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="toggle-stack">
+                      {(
+                        [
+                          {
+                            title: "DIFFICULTIES",
+                            value: includeDifficulties,
+                            setter: setIncludeDifficulties,
+                            hint: "Enable difficulty randomizer for each level.",
+                          },
+                          {
+                            title: "ENABLE WEAPON-RELATED CHALLENGES",
+                            value: includeWeaponsChallenges,
+                            setter: setIncludeWeaponsChallenges,
+                            hint: "Include weapon- or weapon varieties-specific challenges in extra challenges pool."
+                          },
+                          {
+                            title: "SPECIFY WEAPONS CHALLENGE",
+                            value: specifyWeapons,
+                            setter: setSpecifyWeapons,
+                            hint: "Weapon challenges will directly point to a random weapon of a challenge."
+                          },
+                          {
+                            title: "SPECIFY VARIATIONS CHALLENGE",
+                            value: specifyVarieties,
+                            setter: setSpecifyVarieties,
+                            hint: "Variation challenges will directly point to a random variation of a weapon."
+                          }
+                        ] as const
+                      ).map(item => (
+                        <button
+                          key={item.title}
+                          type="button"
+                          className={`switch-row${item.value ? " active" : ""}`}
+                          onClick={() => item.setter(prev => !prev)}
+                        >
+                          <span className="switch-row__check" />
+                          <span className="switch-row__text">
+                            <span className="switch-row__title">{item.title}</span>
+                            <span className="switch-row__hint">{item.hint}</span>
+                          </span>
                         </button>
                       ))}
                     </div>
                   </div>
+                )}
 
-                  <div className="field-group">
-                    <div className="field-label-row">
-                      <span className="field-label">BGM VOLUME</span>
-                      <span className="field-value">{muted ? "MUTED" : `${bgmVolume}%`}</span>
-                    </div>
-                    <input
-                      className="range-input"
-                      type="range"
-                      min={0}
-                      max={100}
-                      step={1}
-                      value={bgmVolume}
-                      disabled={muted}
-                      onChange={e => setBgmVolume(Number(e.target.value))}
-                    />
-                    <div className="field-hint">
-                      bgm.ogg starts after your first interaction at 50%. Use the mute button (bottom-left) for quick toggle.
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ── LEVEL POOL tab ──────────────────────────────────────── */}
-              {activeTab === "pool" && (
-                <div className="control-stack">
-                  {/* Layers */}
-                  <div className="field-group">
-                    <div className="field-label-row">
-                      <span className="field-label">POOL LAYERS</span>
-                    </div>
-                    <div className="action-row">
-                      <button type="button" className="mini-action" onClick={() => setAllLayers(true)}>Select all</button>
-                      <button type="button" className="mini-action" onClick={() => setAllLayers(false)}>Clear all</button>
-                    </div>
-                    <div className="layer-grid">
-                      {LAYER_ORDER.map(layer => {
-                        const layerData = LAYERS[layer];
-                        const active = selectedLayers[String(layer)];
-                        const levelCount = ALL_LEVELS.filter(l => l.layer === layer).length;
-
-                        return (
-                          <button
-                            key={String(layer)}
-                            type="button"
-                            className={`layer-card${active ? " active" : ""}`}
-                            onClick={() => setLayerSelection(layer, !active)}
-                          >
-                            <span className="layer-card__swatch" style={{ background: layerData.color }} />
-                            <span className="layer-card__meta">
-                              <span className="layer-card__name">LAYER {layer} — {layerData.name}</span>
-                              <span className="layer-card__count">{levelCount} levels</span>
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Individual levels */}
-                  <div className="field-group">
-                    <div className="field-label-row">
-                      <span className="field-label">POOL LEVELS</span>
-                    </div>
-                    <div className="action-row">
-                      <button type="button" className="mini-action" onClick={() => setAllLevels(true)}>Select all</button>
-                      <button type="button" className="mini-action" onClick={() => setAllLevels(false)}>Clear all</button>
-                    </div>
-                    <div className="level-groups">
-                      {LEVELS_BY_LAYER.map(group => {
-                        const groupKey = String(group.layer);
-                        const groupActive = selectedLayers[groupKey];
-
-                        return (
-                          <section
-                            key={groupKey}
-                            className={`layer-group${groupActive ? "" : " inactive"}`}
-                          >
-                            <div className="layer-group__header">
-                              <div className="layer-group__title">
-                                LAYER {group.layer} — {LAYERS[group.layer].name}
-                              </div>
-                              <div className="layer-group__meta">{group.levels.length} mapped levels</div>
-                            </div>
-                            <div className="level-chip-grid">
-                              {group.levels.map(level => {
-                                const active = selectedLevels[level.id];
-                                return (
-                                  <button
-                                    key={level.id}
-                                    type="button"
-                                    className={`level-chip${active ? " active" : ""}`}
-                                    onClick={() => toggleLevel(level.id)}
-                                  >
-                                    <span className="level-chip__id">{level.id}</span>
-                                    <span className="level-chip__name">{level.name}</span>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </section>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* ── CHALLENGES tab ──────────────────────────────────────── */}
-              {activeTab === "challenges" && (
-                <div className="control-stack">
-                  <div className="toggle-stack">
-                    {(
-                      [
-                        {
-                          title: "LEVEL CHALLENGES",
-                          value: includeBaseChallenges,
-                          setter: setIncludeBaseChallenges,
-                          hint: "Uses the base challenge lines already attached to each level.",
-                        },
-                        {
-                          title: "ADDITIONAL CHALLENGES",
-                          value: includeExtraChallenges,
-                          setter: setIncludeExtraChallenges,
-                          hint: "Adds extra randomized objectives from the shared pool.",
-                        },
-                        {
-                          title: "P-RANK",
-                          value: includePRank,
-                          setter: setIncludePRank,
-                          hint: "Adds a separate P-RANK objective to the output card.",
-                        },
-                      ] as const
-                    ).map(item => (
-                      <button
-                        key={item.title}
-                        type="button"
-                        className={`switch-row${item.value ? " active" : ""}`}
-                        onClick={() => item.setter(prev => !prev)}
-                      >
-                        <span className="switch-row__check" />
-                        <span className="switch-row__text">
-                          <span className="switch-row__title">{item.title}</span>
-                          <span className="switch-row__hint">{item.hint}</span>
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="slider-grid">
-                    {(
-                      [
-                        { label: "BASE CHANCE", value: baseChance, set: setBaseChance },
-                        { label: "EXTRA CHANCE", value: extraChance, set: setExtraChance },
-                        { label: "P-RANK CHANCE", value: prankChance, set: setPrankChance },
-                      ] as const
-                    ).map(item => (
-                      <div key={item.label} className="slider-card">
-                        <div className="field-label-row">
-                          <span className="field-label">{item.label}</span>
-                          <span className="field-value">{item.value}%</span>
-                        </div>
-                        <input
-                          className="range-input"
-                          type="range"
-                          min={0}
-                          max={100}
-                          step={1}
-                          value={item.value}
-                          onChange={e => item.set(Number(e.target.value))}
-                        />
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="toggle-stack">
-                    {(
-                      [
-                        {
-                          title: "DIFFICULTIES",
-                          value: includeDifficulties,
-                          setter: setIncludeDifficulties,
-                          hint: "Enable difficulty randomizer for each level.",
-                        },
-                        {
-                          title: "ENABLE WEAPON-RELATED CHALLENGES",
-                          value: includeWeaponsChallenges,
-                          setter: setIncludeWeaponsChallenges,
-                          hint: "Include weapon- or weapon varieties-specific challenges in extra challenges pool."
-                        },
-                        {
-                          title: "SPECIFY WEAPONS CHALLENGE",
-                          value: specifyWeapons,
-                          setter: setSpecifyWeapons,
-                          hint: "Weapon challenges will directly point to a random weapon of a challenge."
-                        },
-                        {
-                          title: "SPECIFY VARIATIONS CHALLENGE",
-                          value: specifyVarieties,
-                          setter: setSpecifyVarieties,
-                          hint: "Variation challenges will directly point to a random variation of a weapon."
-                        }
-                      ] as const
-                    ).map(item => (
-                      <button
-                        key={item.title}
-                        type="button"
-                        className={`switch-row${item.value ? " active" : ""}`}
-                        onClick={() => item.setter(prev => !prev)}
-                      >
-                        <span className="switch-row__check" />
-                        <span className="switch-row__text">
-                          <span className="switch-row__title">{item.title}</span>
-                          <span className="switch-row__hint">{item.hint}</span>
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-            </div>{/* end settings-modal__body */}
+              </div>{/* end settings-modal__body */}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 }
