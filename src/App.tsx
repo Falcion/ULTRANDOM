@@ -117,6 +117,9 @@ export default function App() {
   const [baseChance, setBaseChance] = useState(33);
   const [extraChance, setExtraChance] = useState(10);
   const [prankChance, setPrankChance] = useState(50);
+  const [includeWeaponsChallenges, setIncludeWeaponsChallenges] = useState(true);
+  const [specifyWeapons, setSpecifyWeapons] = useState(false);
+  const [specifyVarieties, setSpecifyVarieties] = useState(false);
 
   // Visual/audio (inside settings)
   const [selectedBackground, setSelectedBackground] = useState<BackgroundChoice>("red");
@@ -255,6 +258,9 @@ export default function App() {
       baseChance: percentToFloat(baseChance),
       extraChance: percentToFloat(extraChance),
       prankChance: percentToFloat(prankChance),
+      includeWeaponsChallenges: includeWeaponsChallenges,
+      specifyWeapons: specifyWeapons,
+      specifyVarieties: specifyVarieties
     };
 
     const enriched = picked.map(level => {
@@ -794,6 +800,24 @@ export default function App() {
                           setter: setIncludeDifficulties,
                           hint: "Enable difficulty randomizer for each level.",
                         },
+                        {
+                          title: "ENABLE WEAPON-RELATED CHALLENGES",
+                          value: includeWeaponsChallenges,
+                          setter: setIncludeWeaponsChallenges,
+                          hint: "Include weapon- or weapon varieties-specific challenges in extra challenges pool."
+                        },
+                        {
+                          title: "SPECIFY WEAPONS CHALLENGE",
+                          value: specifyWeapons,
+                          setter: setSpecifyWeapons,
+                          hint: "Weapon challenges will directly point to a random weapon of a challenge."
+                        },
+                        {
+                          title: "SPECIFY VARIATIONS CHALLENGE",
+                          value: specifyVarieties,
+                          setter: setSpecifyVarieties,
+                          hint: "Variation challenges will directly point to a random variation of a weapon."
+                        }
                       ] as const
                     ).map(item => (
                       <button

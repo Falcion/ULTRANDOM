@@ -22,8 +22,6 @@ export const CHALLENGES_EXTRA: Array<CHALLENGE> = [
     { task: "Parry an attack", type: "SKILL" },
     { task: "Parry 5 attacks", type: "SKILL" },
     { task: "Parry 10 attacks", type: "SKILL" },
-    { task: "Kill 5 enemies with a single weapon", type: "SKILL" },
-    { task: "Kill an enemy with a specific weapon", type: "SKILL" },
 
     // Secret challenges
     { task: "Find the secret encounter", type: "IN-GAME" },
@@ -32,17 +30,21 @@ export const CHALLENGES_EXTRA: Array<CHALLENGE> = [
     { task: "Reach the secret exit", type: "IN-GAME" },
 
     // Difficulty modifiers
-    { task: "Complete on ULTRAKILL difficulty", type: "DIFFICULTY" },
-    { task: "P-rank the level (All requirements)", type: "DIFFICULTY" },
     { task: "No checkpoint deaths", type: "DIFFICULTY" },
+    { task: "No damage taken", type: "DIFFICULTY" },
     { task: "No damage taken in phase", type: "DIFFICULTY" },
-    { task: "Iron Fist: only parry, no blocking", type: "DIFFICULTY" },
-    { task: "Only use melee weapons", type: "DIFFICULTY" },
-    { task: "Only use ranged weapons", type: "DIFFICULTY" },
-    { task: "Only use one weapon", type: "DIFFICULTY" },
-    { task: "Only use one variety of weapons", type: "DIFFICULTY" },
-    { task: "Complete with pistol only", type: "DIFFICULTY" },
-    { task: "Complete without using a specific weapon", type: "DIFFICULTY" },
+
+    { task: "MELEE-ONLY", type: "DIFFICULTY" },
+    { task: "NO-MELEE", type: "DIFFICULTY" },
+
+    // Randomized modifiers
+    { task: "Kill {0} enemies with {1}", type: "RANDOMIZED-KILLCOUNT" },
+    { task: "Kill {0} enemies with {1} weapon variety", type: "RANDOMIZED-KILLCOUNT" },
+    { task: "Kill an enemy with {0}", type: "RANDOMIZED" },
+    { task: "Complete with {0} only", type: "RANDOMIZED" },
+    { task: "Complete without using {0}", type: "RANDOMIZED" },
+    { task: "Complete using {0} weapon variety only", type: "RANDOMIZED-VARIETY" },
+    { task: "Complete without using {0} weapon variety", type: "RANDOMIZED-VARIETY" }
 ];
 
 export default CHALLENGES_EXTRA;

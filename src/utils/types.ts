@@ -5,4 +5,7 @@ export type ChallengeRollConfig = {
     baseChance: number;
     extraChance: number;
     prankChance: number;
+    includeWeaponsChallenges: boolean;
+    specifyWeapons: boolean;
+    specifyVarieties: boolean;
 };

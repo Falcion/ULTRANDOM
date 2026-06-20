@@ -43,7 +43,10 @@ export type CHALLENGE_TYPE =
     | "STYLE"
     | "ENVIRONMENTAL"
     | "SKILL"
-    | "DIFFICULTY";
+    | "DIFFICULTY"
+    | "RANDOMIZED"
+    | "RANDOMIZED-VARIETY"
+    | "RANDOMIZED-KILLCOUNT";
 
 export type CHALLENGE_DATA = {
     challenges: CHALLENGE[];
