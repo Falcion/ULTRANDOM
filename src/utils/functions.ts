@@ -63,6 +63,29 @@ export function shuffleChallenges(level: LEVEL, options: ChallengeRollConfig): C
     const BASIC_CHALLENGES: CHALLENGE[] = [];
     const EXTRA_CHALLENGES: CHALLENGE[] = [];
 
+    function pushExtraChallenge(challenge: CHALLENGE): void {
+        if (challenge.type === "RANDOMIZED" && includeWeaponsChallenges)
+            EXTRA_CHALLENGES.push({
+                task: format(challenge.task, specifyWeapons ? shuffleSelect(WEAPONS) : 'any specific weapon'),
+                type: challenge.type
+            });
+        else if (challenge.type === "RANDOMIZED-VARIETY" && includeWeaponsChallenges)
+            EXTRA_CHALLENGES.push({
+                task: format(challenge.task, specifyVarieties ? shuffleSelect(WEAPONS_VARIETIES) : 'any specific'),
+                type: challenge.type
+            });
+        else if (challenge.type === "RANDOMIZED-KILLCOUNT" && includeWeaponsChallenges)
+            EXTRA_CHALLENGES.push({
+                task: format(challenge.task, rngNum(KILLCOUNT_MIN, KILLCOUNT_MAX),
+                    challenge.task.includes('variety')
+                        ? (specifyVarieties ? shuffleSelect(WEAPONS_VARIETIES) : 'any specific')
+                        : (specifyWeapons ? shuffleSelect(WEAPONS) : 'any specific weapon')),
+                type: challenge.type
+            });
+        else
+            EXTRA_CHALLENGES.push(challenge);
+    }
+
     if (includeBaseChallenges && level.challenges) {
         for (const challenge of level.challenges) {
             if (Math.random() < baseChance)
@@ -76,59 +99,26 @@ export function shuffleChallenges(level: LEVEL, options: ChallengeRollConfig): C
         for (const challenge of shuffled) {
             if (EXTRA_CHALLENGES.length >= AMOUNT_OF_EXTRA_CHALLENGES_MAX) break;
 
-            if (Math.random() < extraChance) {
-                if (challenge.type === "RANDOMIZED" && includeWeaponsChallenges)
-                    EXTRA_CHALLENGES.push({
-                        task: format(challenge.task, specifyWeapons ? shuffleSelect(WEAPONS) : 'any specific weapon'),
-                        type: challenge.type
-                    });
-                else if (challenge.type === "RANDOMIZED-VARIETY" && includeWeaponsChallenges)
-                    EXTRA_CHALLENGES.push({
-                        task: format(challenge.task, specifyVarieties ? shuffleSelect(WEAPONS_VARIETIES) : 'any specific'),
-                        type: challenge.type
-                    });
-                else if (challenge.type === "RANDOMIZED-KILLCOUNT" && includeWeaponsChallenges)
-                    EXTRA_CHALLENGES.push({
-                        task: format(challenge.task, rngNum(KILLCOUNT_MIN, KILLCOUNT_MAX),
-                            challenge.task.includes('variety')
-                                ? (specifyVarieties ? shuffleSelect(WEAPONS_VARIETIES) : 'any specific')
-                                : (specifyWeapons ? shuffleSelect(WEAPONS) : 'any specific weapon')),
-                        type: challenge.type
-                    });
-                else
-                    EXTRA_CHALLENGES.push(challenge);
-            }
+            if (Math.random() < extraChance)
+                pushExtraChallenge(challenge);
         }
 
         if (EXTRA_CHALLENGES.length < AMOUNT_OF_EXTRA_CHALLENGES_MIN) {
             for (const challenge of shuffled) {
                 if (EXTRA_CHALLENGES.length >= AMOUNT_OF_EXTRA_CHALLENGES_MIN) break;
                 if (EXTRA_CHALLENGES.includes(challenge)) continue;
-                if (challenge.type === "RANDOMIZED" && includeWeaponsChallenges)
-                    EXTRA_CHALLENGES.push({
-                        task: format(challenge.task, specifyWeapons ? shuffleSelect(WEAPONS) : 'any specific weapon'),
-                        type: challenge.type
-                    });
-                else if (challenge.type === "RANDOMIZED-VARIETY" && includeWeaponsChallenges)
-                    EXTRA_CHALLENGES.push({
-                        task: format(challenge.task, specifyVarieties ? shuffleSelect(WEAPONS_VARIETIES) : 'any specific'),
-                        type: challenge.type
-                    });
-                else if (challenge.type === "RANDOMIZED-KILLCOUNT" && includeWeaponsChallenges)
-                    EXTRA_CHALLENGES.push({
-                        task: format(challenge.task, rngNum(KILLCOUNT_MIN, KILLCOUNT_MAX),
-                            challenge.task.includes('variety')
-                                ? (specifyVarieties ? shuffleSelect(WEAPONS_VARIETIES) : 'any specific')
-                                : (specifyWeapons ? shuffleSelect(WEAPONS) : 'any specific weapon')),
-                        type: challenge.type
-                    });
-                else
-                    EXTRA_CHALLENGES.push(challenge);
+
+                pushExtraChallenge(challenge);
             }
         }
     }
 
-    const PERFECT_RANKING_CHANCE = includePRank ? Math.random() < prankChance : false;
+    const PERFECT_RANKING_CHANCE = includePRank ? (Math.random() < prankChance) : false;
 
-    return { challenges: [...BASIC_CHALLENGES, ...EXTRA_CHALLENGES], perfect_ranking: PERFECT_RANKING_CHANCE };
+    return {
+        challenges: [
+            ...BASIC_CHALLENGES,
+            ...EXTRA_CHALLENGES],
+        perfect_ranking: PERFECT_RANKING_CHANCE
+    };
 }

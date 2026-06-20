@@ -35,6 +35,7 @@ export const LAYERS: Record<number | "P", LAYER> = {
     P: { name: "PRIME", color: "#ffd700", act: LAYERS_ACTS["P"] },
 };
 
+export const LAYERS_ORDER: Array<number | "P"> = [0, 1, 2, 3, 4, 5, 6, 7, 8, "P"];
 
 export const LEVELS: Record<string, LEVEL> = {
     // PRELUDE
@@ -90,3 +91,9 @@ export const LEVELS: Record<string, LEVEL> = {
     "P-1": { id: "P-1", name: "SOUL SURVIVOR", layer: "P", type: "PRIME", challenges: undefined },
     "P-2": { id: "P-2", name: "WAIT OF THE WORLD", layer: "P", type: "PRIME", challenges: undefined },
 };
+
+export const ALL_LEVELS = Object.values(LEVELS);
+export const LEVELS_BY_LAYER = LAYERS_ORDER.map(layer => ({
+    layer,
+    levels: ALL_LEVELS.filter(level => level.layer === layer),
+}));
