@@ -394,17 +394,6 @@ export default function App() {
                     <div className="num-display">{count}</div>
                     <button className="num-btn" type="button" onClick={() => setCount(p => Math.min(maxCount, p + 1))}>+</button>
                   </div>
-                </div>
-
-                <div className="action-row action-row--center">
-                  <button
-                    className="fire-btn"
-                    type="button"
-                    onClick={handleRoll}
-                    disabled={nothingEnabled}
-                  >
-                    RANDOMIZE
-                  </button>
                   <div className="field-group">
                     <span className="field-label">DIFFICULTIES</span>
                     <div className="level-chip-grid">
@@ -429,6 +418,17 @@ export default function App() {
                 </div>
               </div>
             </section>
+
+            <div className="action-row action-row--center">
+              <button
+                className="fire-btn"
+                type="button"
+                onClick={handleRoll}
+                disabled={nothingEnabled}
+              >
+                RANDOMIZE
+              </button>
+            </div>
 
             {/* Results */}
             {(results.length > 0 || noPool) && (

@@ -59,8 +59,8 @@ img {
     180deg,
     transparent 0,
     transparent 2px,
-    rgba(0, 0, 0, 0.14) 2px,
-    rgba(0, 0, 0, 0.14) 4px
+    rgba(0, 0, 0, 0.2) 2px,
+    rgba(0, 0, 0, 0.2) 4px
   );
   pointer-events: none;
   z-index: 20;
@@ -78,8 +78,12 @@ img {
   min-height: 100vh;
   padding: 28px 18px 48px;
   background:
-    radial-gradient(circle at top, rgba(120, 0, 0, 0.34), transparent 42%),
-    linear-gradient(180deg, rgba(6, 0, 0, 0.4), rgba(6, 0, 0, 0.76));
+    radial-gradient(
+      ellipse 80% 40% at 50% 0%,
+      rgba(180, 0, 0, 0.38),
+      transparent 55%
+    ),
+    linear-gradient(180deg, rgba(4, 0, 0, 0.5), rgba(4, 0, 0, 0.82));
   position: relative;
   z-index: 1;
 }
@@ -93,22 +97,28 @@ img {
   overflow: hidden;
 }
 
-.panel::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.04),
-    transparent 55%
-  );
-  pointer-events: none;
-}
-
 .hero-panel {
   max-width: 1280px;
   margin: 0 auto 22px;
-  padding: 24px 24px 28px;
+  padding: 0 0 28px;
+  /* Blood bar across the very top */
+  border-top: 3px solid var(--accent);
+  box-shadow:
+    var(--shadow),
+    0 -2px 0 rgba(255, 43, 43, 0.3),
+    inset 0 0 80px rgba(255, 0, 0, 0.04);
+}
+
+/* Bleed glow under the top bar */
+.hero-panel::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(180deg, rgba(255, 0, 0, 0.12), transparent);
+  pointer-events: none;
 }
 
 .hero-panel__topline {
@@ -116,6 +126,7 @@ img {
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+  padding: 14px 24px 0;
 }
 
 .hero-tag {
@@ -130,23 +141,91 @@ img {
 }
 
 .hero-title {
-  margin: 10px 0 8px;
+  margin: 8px 0 10px;
+  padding: 0 24px;
   font-family: "VT323", monospace;
   font-size: clamp(3.6rem, 10vw, 7rem);
   line-height: 0.9;
   letter-spacing: 0.08em;
   color: var(--accent);
   text-shadow:
-    0 0 22px rgba(255, 43, 43, 0.55),
-    0 0 56px rgba(255, 43, 43, 0.18);
+    0 0 14px rgba(255, 43, 43, 0.9),
+    0 0 40px rgba(255, 43, 43, 0.45),
+    0 0 90px rgba(255, 0, 0, 0.15),
+    2px 2px 0 rgba(80, 0, 0, 0.6);
+  animation: heroGlitch 8s infinite;
+}
+
+@keyframes heroGlitch {
+  0%,
+  88%,
+  100% {
+    text-shadow:
+      0 0 14px rgba(255, 43, 43, 0.9),
+      0 0 40px rgba(255, 43, 43, 0.45),
+      0 0 90px rgba(255, 0, 0, 0.15),
+      2px 2px 0 rgba(80, 0, 0, 0.6);
+    transform: none;
+  }
+  89% {
+    transform: translate(-2px, 0);
+    text-shadow:
+      3px 0 #00eeff,
+      -3px 0 #ff0055,
+      0 0 20px rgba(255, 43, 43, 0.9);
+  }
+  90% {
+    transform: translate(3px, -1px);
+    text-shadow:
+      -2px 0 #00eeff,
+      2px 0 #ff0055;
+  }
+  91% {
+    transform: translate(-1px, 0);
+    text-shadow:
+      2px 0 14px rgba(255, 43, 43, 0.9),
+      0 0 40px rgba(255, 43, 43, 0.45);
+  }
+  92% {
+    transform: none;
+  }
+  93% {
+    transform: translate(2px, 0);
+    filter: brightness(1.4);
+  }
+  94% {
+    transform: none;
+    filter: none;
+  }
+}
+
+/* Diagonal slash divider below title */
+.hero-slash {
+  position: relative;
+  height: 2px;
+  margin: 0 24px 16px;
+  background: linear-gradient(90deg, var(--accent), rgba(255, 43, 43, 0.1));
+  overflow: visible;
+}
+
+.hero-slash::after {
+  content: "// ";
+  position: absolute;
+  right: 0;
+  top: -10px;
+  font-family: "VT323", monospace;
+  font-size: 1.1rem;
+  color: rgba(255, 43, 43, 0.3);
+  letter-spacing: 0.1em;
 }
 
 .hero-copy {
   max-width: 68ch;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   line-height: 1.65;
   color: var(--muted);
   margin: 0;
+  padding: 0 24px;
 }
 
 .dashboard-grid {
@@ -165,9 +244,11 @@ img {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 16px;
-  background: rgba(255, 46, 46, 0.08);
-  border-bottom: 1px solid rgba(255, 46, 46, 0.2);
+  padding: 12px 16px;
+  background: rgba(255, 46, 46, 0.1);
+  border-bottom: 1px solid rgba(255, 46, 46, 0.25);
+  border-left: 3px solid var(--accent);
+  box-shadow: inset 0 -1px 0 rgba(255, 0, 0, 0.08);
 }
 
 .panel-header-dot {
@@ -180,9 +261,10 @@ img {
 
 .panel-title {
   font-family: "VT323", monospace;
-  font-size: 1.4rem;
-  letter-spacing: 0.16em;
+  font-size: 1.5rem;
+  letter-spacing: 0.2em;
   color: #ff8a8a;
+  text-shadow: 0 0 12px rgba(255, 80, 80, 0.5);
 }
 
 .panel-body {
@@ -324,18 +406,40 @@ img {
 
 .type-card {
   padding: 14px;
-  background: rgba(10, 0, 0, 0.6);
+  background: rgba(10, 0, 0, 0.7);
   color: var(--text);
   display: grid;
   justify-items: start;
   gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Diagonal slash watermark on inactive cards */
+.type-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    -55deg,
+    transparent,
+    transparent 12px,
+    rgba(255, 0, 0, 0.018) 12px,
+    rgba(255, 0, 0, 0.018) 13px
+  );
+  pointer-events: none;
 }
 
 .type-card.active {
-  background: rgba(255, 43, 43, 0.14);
+  background: rgba(160, 0, 0, 0.18);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 43, 43, 0.28),
-    0 0 18px rgba(255, 43, 43, 0.1);
+    inset 0 0 0 1px rgba(255, 43, 43, 0.45),
+    0 0 22px rgba(255, 43, 43, 0.18);
+  border-color: rgba(255, 46, 46, 0.55);
+}
+
+.type-card.active .type-card__icon {
+  filter: drop-shadow(0 0 8px rgba(255, 100, 100, 0.7));
 }
 
 .type-card__icon,
@@ -350,6 +454,7 @@ img {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  grid-column: 1 / -1; /* disable grid alignment */
 }
 
 .action-row--center {
@@ -572,26 +677,91 @@ img {
   font-size: 1.7rem;
 }
 
+/* ── RANDOMIZE button — full-width bar, no clipping weirdness ────────────── */
+.fire-btn-wrap {
+  /* Extra horizontal room so the glow doesn't get clipped by overflow:hidden */
+  margin: 4px -4px 0;
+  padding: 4px;
+  display: flex;
+  justify-content: center;
+}
+
 .fire-btn {
   border: 0;
-  padding: 18px 44px;
-  background: linear-gradient(180deg, #ff3a3a, #d10000);
+  /* Skewed shape via skewX — visually identical to clip-path chevron but
+     doesn't cause the off-center shadow artefact                          */
+  transform: skewX(-6deg);
+  padding: 16px 52px;
+  background: linear-gradient(180deg, #ff4040 0%, #cc0000 55%, #990000 100%);
   color: #fff;
   font-family: "VT323", monospace;
-  font-size: 2.2rem;
-  letter-spacing: 0.16em;
+  font-size: 2.4rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   box-shadow:
-    0 0 28px rgba(255, 43, 43, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+    0 0 0 1px rgba(255, 80, 80, 0.5),
+    0 0 24px rgba(255, 43, 43, 0.55),
+    0 0 60px rgba(255, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 200, 200, 0.22),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: hidden;
+  transition:
+    background 120ms ease,
+    box-shadow 120ms ease,
+    transform 80ms ease;
+  /* Un-skew the label so text stays straight */
+}
+
+.fire-btn > span {
+  display: inline-block;
+  transform: skewX(6deg);
+}
+
+/* Shimmer sweep on hover */
+.fire-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.12) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  transition: transform 350ms ease;
+}
+
+.fire-btn:hover::before {
+  transform: translateX(100%);
+}
+
+.fire-btn:hover {
+  background: linear-gradient(180deg, #ff5555 0%, #e00000 55%, #aa0000 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 100, 100, 0.7),
+    0 0 36px rgba(255, 43, 43, 0.75),
+    0 0 80px rgba(255, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 200, 200, 0.3),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.4);
+  transform: skewX(-6deg) translateY(-1px);
+}
+
+.fire-btn:active {
+  transform: skewX(-6deg) translateY(1px);
+  box-shadow:
+    0 0 0 1px rgba(255, 80, 80, 0.5),
+    0 0 12px rgba(255, 43, 43, 0.4),
+    inset 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 .fire-btn:disabled {
-  background: #3d0000;
-  color: #7c3b3b;
+  background: linear-gradient(180deg, #3a0000, #220000);
+  color: #5a2a2a;
   box-shadow: none;
   cursor: not-allowed;
+  transform: skewX(-6deg);
 }
 
 .results-panel {
@@ -645,18 +815,51 @@ img {
 
 .result-card {
   display: grid;
-  grid-template-columns: 6px minmax(0, 1fr);
-  background: rgba(10, 0, 0, 0.82);
-  border: 1px solid rgba(255, 46, 46, 0.22);
-  animation: reveal 240ms ease both;
+  grid-template-columns: 8px minmax(0, 1fr);
+  background: rgba(10, 0, 0, 0.88);
+  border: 1px solid rgba(255, 46, 46, 0.28);
+  animation: reveal 260ms ease both;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+  position: relative;
+}
+
+.result-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 8px;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 80, 80, 0.5), transparent 60%);
+  pointer-events: none;
+}
+
+.result-card:hover {
+  border-color: rgba(255, 46, 46, 0.5);
+  box-shadow: 0 0 24px rgba(255, 43, 43, 0.14);
 }
 
 .result-card__accent {
   min-height: 100%;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+/* Glow leak from accent bar */
+.result-card__accent::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  right: -8px;
+  background: inherit;
+  opacity: 0.25;
+  filter: blur(6px);
 }
 
 .result-card__content {
-  padding: 16px 18px;
+  padding: 18px 20px;
 }
 
 .result-topline {
