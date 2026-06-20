@@ -470,6 +470,7 @@ export default function App() {
                                   <div className="result-layer">LAYER {level.layer} — {LAYERS[level.layer]?.name ?? "UNKNOWN"}</div>
                                   <div className="result-name">{level.name}</div>
                                   <div className="result-id">LEVEL {level.id} {level.difficulty ? `(${level.difficulty.name})` : ''}</div>
+                                  <div className="result-id">LEVEL {level.id} {(level.difficulty && includeDifficulties) ? `(${level.difficulty.name})` : ''}</div>
                                 </div>
                                 <div className={`type-badge type-badge--${LEVEL_TYPE_META[level.type].accent}`}>
                                   <img className="type-badge__icon" src={LEVEL_TYPE_META[level.type].image} alt="" aria-hidden="true" />
