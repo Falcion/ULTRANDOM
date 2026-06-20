@@ -184,8 +184,6 @@ export default function App() {
 
   // Parry SFX
   const playParrySound = () => {
-    if (muted) return;
-
     const sfx = new Audio("/music/ultrakill-parry.mp3");
     sfx.volume = 0.18;
 
@@ -299,7 +297,6 @@ export default function App() {
     return true;
   }).length;
 
-  const nothingEnabled = !includeNormal && !includeSecret && !includePrime && !includeBoss && !includeEncores;
   const nothingEnabled =
     (
       !includeNormal &&
