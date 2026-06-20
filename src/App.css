@@ -539,7 +539,8 @@ img {
   padding: 14px;
 }
 
-.layer-group.inactive {
+.layer-group.inactive,
+.field-group.inactive {
   opacity: 0.58;
 }
 

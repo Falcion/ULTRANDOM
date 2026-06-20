@@ -400,7 +400,7 @@ export default function App() {
                     <div className="num-display">{count}</div>
                     <button className="num-btn" type="button" onClick={() => setCount(p => Math.min(maxCount, p + 1))}>+</button>
                   </div>
-                  <div className="field-group">
+                  <div className={`field-group${!includeDifficulties ? ' inactive' : ''}`}>
                     <span className="field-label">DIFFICULTIES</span>
                     <div className="level-chip-grid">
                       {
@@ -469,7 +469,6 @@ export default function App() {
                                 <div>
                                   <div className="result-layer">LAYER {level.layer} — {LAYERS[level.layer]?.name ?? "UNKNOWN"}</div>
                                   <div className="result-name">{level.name}</div>
-                                  <div className="result-id">LEVEL {level.id} {level.difficulty ? `(${level.difficulty.name})` : ''}</div>
                                   <div className="result-id">LEVEL {level.id} {(level.difficulty && includeDifficulties) ? `(${level.difficulty.name})` : ''}</div>
                                 </div>
                                 <div className={`type-badge type-badge--${LEVEL_TYPE_META[level.type].accent}`}>
