@@ -9,3 +9,9 @@ export type BackgroundChoice =
     | "rust"
     | "ash"
     | "catacombs";
+
+export type Background = {
+    id: BackgroundChoice;
+    label: string;
+    image?: string
+}

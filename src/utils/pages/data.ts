@@ -3,7 +3,7 @@ import type {
     LEVEL_TYPEDATA
 } from "@data/types";
 
-import type { BackgroundChoice } from "@utils/pages/types";
+import type { Background } from "@utils/pages/types";
 
 export const LEVEL_TYPE_META: Record<LEVEL_TYPE, LEVEL_TYPEDATA> = {
     NORMAL: {
@@ -33,7 +33,7 @@ export const LEVEL_TYPE_META: Record<LEVEL_TYPE, LEVEL_TYPEDATA> = {
     }
 };
 
-export const BACKGROUNDS: Array<{ id: BackgroundChoice; label: string; image?: string }> = [
+export const BACKGROUNDS: Array<Background> = [
     { id: "red", label: "Red Field" },
     { id: "storm", label: "Storm Wall", image: "/background/1350597.jpeg" },
     { id: "rust", label: "Rust Veil", image: "/background/1347555.jpeg" },
