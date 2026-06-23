@@ -30,7 +30,8 @@
       "@components/*": ["./src/components/*"],
       "@dashboard/*": ["./src/components/dashboard/*"],
       "@dashboard/el/*": ["./src/components/dashboard/elements/*"],
-      "@settings/*": ["./src/components/panels/settings/*"]
+      "@settings/*": ["./src/components/panels/settings/*"],
+      "@storage/*": ["./src/storage/*"]
     }
   },
   "include": ["src"]

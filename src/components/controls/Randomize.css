@@ -8,7 +8,7 @@
 
 .fire-btn {
   border: 0;
-  /* Skewed shape via skewX — visually identical to clip-path chevron but
+  /* Skewed shape via skewX - visually identical to clip-path chevron but
      doesn't cause the off-center shadow artefact                          */
   transform: skewX(-6deg);
   padding: 16px 52px;
