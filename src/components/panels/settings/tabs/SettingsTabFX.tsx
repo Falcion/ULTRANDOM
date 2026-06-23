@@ -1,29 +1,15 @@
+import type { SettingsTabFXProps } from "@components/props";
+
 import { BACKGROUNDS } from "@utils/pages/data";
 
-import type {
-    Background,
-    BackgroundChoice
-} from "@utils/pages/types";
-
-import type { Dispatch, SetStateAction } from "react";
-
-export type TabFXProps = {
-    background: Background;
-    selectedBackground: BackgroundChoice;
-    setSelectedBackground: Dispatch<SetStateAction<BackgroundChoice>>;
-    muted: boolean;
-    bgmVolume: number;
-    setBgmVolume: Dispatch<SetStateAction<number>>;
-}
-
-export function TabFX({
+export function SettingsTabFX({
     background,
     selectedBackground,
     setSelectedBackground,
     muted,
     bgmVolume,
     setBgmVolume
-}: TabFXProps) {
+}: SettingsTabFXProps) {
     return (
         (
             <div className="control-stack">

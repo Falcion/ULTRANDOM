@@ -1,15 +1,11 @@
+import type { ControlsProps } from "@components/props";
+
 import {
     IconMute,
     IconSettings
 } from "@components/svg/Icons";
 
 import './Controls.css'
-
-export type ControlsProps = {
-    muted: boolean;
-    toggleMute: () => void;
-    setSettingsOpen: (value: React.SetStateAction<boolean>) => void;
-}
 
 export function Controls({
     muted,

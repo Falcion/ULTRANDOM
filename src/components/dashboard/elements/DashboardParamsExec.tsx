@@ -1,23 +1,15 @@
 import { DIFFICULTIES } from "@data/difficulties";
-import type { Dispatch, SetStateAction } from "react";
 
-export type ParamsExecProps = {
-    count: number;
-    setCount: Dispatch<SetStateAction<number>>;
-    maxCount: number;
-    includeDifficulties: boolean;
-    selectedDifficulties: Record<number, boolean>;
-    toggleDifficulty: (difficultyId: number) => void;
-}
+import type { DashboardParamsExecProps } from "@components/props";
 
-export function ParamsExec({
+export function DashboardParamsExec({
     count,
     setCount,
     maxCount,
     includeDifficulties,
     selectedDifficulties,
     toggleDifficulty
-}: ParamsExecProps) {
+}: DashboardParamsExecProps) {
     return (
         <section className="panel control-panel">
             <div className="panel-header">
@@ -58,6 +50,6 @@ export function ParamsExec({
                     </div>
                 </div>
             </div>
-        </section>
+        </section >
     )
 }

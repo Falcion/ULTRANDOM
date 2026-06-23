@@ -23,10 +23,14 @@
 
     /* Paths */
     "paths": {
+      "@/*": ["./src/*"],
       "@data/*": ["./src/data/*"],
       "@utils/*": ["./src/utils/*"],
       "@const/*": ["./src/const/*"],
-      "@components/*": ["./src/components/*"]
+      "@components/*": ["./src/components/*"],
+      "@dashboard/*": ["./src/components/dashboard/*"],
+      "@dashboard/el/*": ["./src/components/dashboard/elements/*"],
+      "@settings/*": ["./src/components/panels/settings/*"]
     }
   },
   "include": ["src"]

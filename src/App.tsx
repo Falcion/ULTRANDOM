@@ -1,20 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
-import {
-  ALL_LEVELS,
-  LAYERS_ORDER,
-} from "@data/locations";
-
 import type {
   EnrichedLevel
 } from "@data/types";
-
-import { DIFFICULTIES } from "@data/difficulties";
-
-import {
-  shuffle,
-  shuffleChallenges
-} from "@utils/functions";
 
 import type {
   ChallengeRollConfig
@@ -25,16 +13,29 @@ import type {
   BackgroundChoice
 } from "@utils/pages/types";
 
+import {
+  ALL_LEVELS,
+  LAYERS_ORDER,
+} from "@data/locations";
+
+import { DIFFICULTIES } from "@data/difficulties";
+
+import {
+  shuffle,
+  shuffleChallenges
+} from "@utils/functions";
+
 import { BACKGROUNDS } from "@utils/pages/data";
 
 import { createSelectionMap, percentToFloat } from "@utils/pages/helpers";
 
-import "./App.css";
 import { Hero } from '@components/panels/Hero';
 import { Footer } from "@components/panels/Footer";
 import { Controls } from "@components/Controls";
 import { Settings } from "@components/panels/Settings";
 import { Dashboard } from "@components/dashboard/Dashboard";
+
+import "./App.css";
 
 export default function App() {
   // Main filters (visible on home page)
@@ -52,7 +53,7 @@ export default function App() {
   const [selectedLevels, setSelectedLevels] = useState<Record<string, boolean>>(
     () => createSelectionMap(ALL_LEVELS.map(level => level.id)),
   );
-  const [selectedDifficulties, setSeletedDifficulties] = useState<Record<number, boolean>>(
+  const [selectedDifficulties, setSelectedDifficulties] = useState<Record<number, boolean>>(
     () => createSelectionMap(DIFFICULTIES.map(diff => diff.id)),
   );
 
@@ -156,7 +157,7 @@ export default function App() {
   const setLayerSelection = (layer: number | "P", value: boolean) =>
     setSelectedLayers(prev => ({ ...prev, [String(layer)]: value }));
 
-  // ── Level helpers ─────────────────────────────────────────────────────────
+  // Level helpers
   const setAllLevels = (value: boolean) =>
     setSelectedLevels(prev => {
       const next = { ...prev };
@@ -168,9 +169,9 @@ export default function App() {
     setSelectedLevels(prev => ({ ...prev, [levelId]: !prev[levelId] }));
 
   const toggleDifficulty = (diffId: number) =>
-    setSeletedDifficulties(prev => ({ ...prev, [diffId]: !prev[diffId] }));
+    setSelectedDifficulties(prev => ({ ...prev, [diffId]: !prev[diffId] }));
 
-  // ── Roll ──────────────────────────────────────────────────────────────────
+  // Roll
   const handleRoll = () => {
     const pool = ALL_LEVELS.filter(level => {
       if (level.type === "NORMAL" && !includeNormal) return false;
@@ -233,7 +234,7 @@ export default function App() {
     }, 100);
   };
 
-  // ── Derived ───────────────────────────────────────────────────────────────
+  // Derived
   const background = BACKGROUNDS.find(item => item.id === selectedBackground) ?? BACKGROUNDS[0];
   const backgroundStyle =
     selectedBackground === "red"

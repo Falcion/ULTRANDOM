@@ -1,22 +1,11 @@
-import { ParamsExec, type ParamsExecProps } from "./elements/ParamsExec";
-import { ParamsLevels, type ParamsLevelsProps } from "./elements/ParamsLevels";
-import { Results, type ResultsProps } from "./elements/Results";
-import { Randomize, type RandomizeProps } from "@components/controls/Randomize";
+import { DashboardParamsExec } from "@dashboard/el/DashboardParamsExec";
+import { DashboardParamsLevels } from "@dashboard/el/DashboardParamsLevels";
+import { DashboardResults } from "@dashboard/el/DashboardResults";
+import { Randomize } from "@components/controls/Randomize";
 
-import type {
-    EnrichedLevel
-} from "@data/types";
+import type { DashboardProps } from "@components/props";
 
 import './Dashboard.css'
-
-export type DashboardProps = {
-    propsParamsExec: ParamsExecProps;
-    propsParamsLevels: ParamsLevelsProps;
-    propsResults: ResultsProps;
-    propsRandomize: RandomizeProps;
-    results: EnrichedLevel[];
-    noPool: boolean;
-};
 
 export function Dashboard({
     propsParamsExec,
@@ -28,13 +17,13 @@ export function Dashboard({
 }: DashboardProps) {
     return (
         <main className="dashboard-grid">
-            <ParamsLevels {...propsParamsLevels} />
-            <ParamsExec {...propsParamsExec} />
+            <DashboardParamsLevels {...propsParamsLevels} />
+            <DashboardParamsExec {...propsParamsExec} />
 
             <Randomize {...propsRandomize} />
 
             {/* Results */}
-            {(results.length > 0 || noPool) && <Results {...propsResults} />}
+            {(results.length > 0 || noPool) && <DashboardResults {...propsResults} />}
         </main>
     )
 }

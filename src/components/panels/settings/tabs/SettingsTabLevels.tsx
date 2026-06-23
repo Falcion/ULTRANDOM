@@ -1,22 +1,15 @@
+import type { SettingsTabLevelsProps } from "@components/props";
+
 import { ALL_LEVELS, LAYERS, LAYERS_ORDER, LEVELS_BY_LAYER } from "@data/locations";
 
-export type TabLevelsProps = {
-    setAllLayers: (value: boolean) => void;
-    selectedLayers: Record<string, boolean>;
-    setLayerSelection: (layer: number | "P", value: boolean) => void;
-    setAllLevels: (value: boolean) => void;
-    selectedLevels: Record<string, boolean>;
-    toggleLevel: (levelId: string) => void;
-}
-
-export function TabLevels({
+export function SettingsTabLevels({
     setAllLayers,
     selectedLayers,
     setLayerSelection,
     setAllLevels,
     selectedLevels,
     toggleLevel
-}: TabLevelsProps) {
+}: SettingsTabLevelsProps) {
     return (
         <div className="control-stack">
             {/* Layers */}

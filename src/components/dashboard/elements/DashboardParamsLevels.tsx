@@ -1,24 +1,9 @@
+import type { DashboardParamsLevelsProps } from "@components/props";
+
 import type { LEVEL_TYPE } from "@data/types";
 import { LEVEL_TYPE_META } from "@utils/pages/data";
-import type { Dispatch, SetStateAction } from "react";
 
-export type ParamsLevelsProps = {
-    includeNormal: boolean;
-    setIncludeNormal: Dispatch<SetStateAction<boolean>>;
-    includeSecret: boolean;
-    setIncludeSecret: Dispatch<SetStateAction<boolean>>;
-    includePrime: boolean;
-    setIncludePrime: Dispatch<SetStateAction<boolean>>;
-    includeBoss: boolean;
-    setIncludeBoss: Dispatch<SetStateAction<boolean>>;
-    includeEncores: boolean;
-    setIncludeEncores: Dispatch<SetStateAction<boolean>>;
-    selectedLayerCount: number;
-    selectedLevelCount: number;
-    filteredLevelCount: number;
-};
-
-export function ParamsLevels({
+export function DashboardParamsLevels({
     includeNormal,
     setIncludeNormal,
     includeSecret,
@@ -32,7 +17,7 @@ export function ParamsLevels({
     selectedLayerCount,
     selectedLevelCount,
     filteredLevelCount
-}: ParamsLevelsProps) {
+}: DashboardParamsLevelsProps) {
     return (
         <section className="panel control-panel">
             <div className="panel-header">

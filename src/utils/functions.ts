@@ -1,10 +1,12 @@
-import CHALLENGES_EXTRA from "@data/challenges";
-
 import type {
     CHALLENGE,
     CHALLENGE_DATA,
     LEVEL
 } from "@data/types";
+
+import type { ChallengeRollConfig } from "@utils/types";
+
+import CHALLENGES_EXTRA from "@data/challenges";
 
 import {
     AMOUNT_OF_EXTRA_CHALLENGES_MAX,
@@ -20,8 +22,6 @@ import {
     WEAPONS,
     WEAPONS_VARIETIES
 } from "@data/weapons";
-
-import type { ChallengeRollConfig } from "@utils/types";
 
 export function shuffle<T>(arr: T[]): T[] {
     const a = [...arr];

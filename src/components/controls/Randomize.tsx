@@ -1,9 +1,6 @@
-import './Randomize.css'
+import type { RandomizeProps } from '@components/props'
 
-export type RandomizeProps = {
-    handleRoll: () => void;
-    nothingEnabled: boolean;
-}
+import './Randomize.css'
 
 export function Randomize({
     handleRoll,

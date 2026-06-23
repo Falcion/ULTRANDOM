@@ -1,20 +1,11 @@
-import type { SettingsTab } from "@utils/pages/types";
-import { TabChallenges, type TabChallengesProps } from "./settings/tabs/TabChallenges";
-import { TabFX, type TabFXProps } from "./settings/tabs/TabFX";
-import { TabLevels, type TabLevelsProps } from "./settings/tabs/TabLevels";
-import { SettingsTabEl } from "./settings/SettingsTab";
+import type { SettingsProps } from "@components/props";
+
+import { SettingsTabChallenges } from "@settings/tabs/SettingsTabChallenges";
+import { SettingsTabFX } from "@settings/tabs/SettingsTabFX";
+import { SettingsTabLevels } from "@settings/tabs/SettingsTabLevels";
+import { SettingsTabEl } from "@settings/SettingsTabs";
 
 import './Settings.css'
-
-export type SettingsProps = {
-    activeTab: SettingsTab;
-    setActiveTab: (tab: SettingsTab) => void;
-    propsFX: TabFXProps;
-    propsLevels: TabLevelsProps;
-    propsChallenges: TabChallengesProps;
-    setSettingsOpen: (value: React.SetStateAction<boolean>) => void;
-}
-
 export function Settings({
     activeTab,
     setActiveTab,
@@ -54,13 +45,13 @@ export function Settings({
                 <div className="settings-modal__body">
 
                     {/* ── VISUAL / AUDIO tab ──────────────────────────────────── */}
-                    {activeTab === "visual" && <TabFX {...propsFX} />}
+                    {activeTab === "visual" && <SettingsTabFX {...propsFX} />}
 
                     {/* ── LEVEL POOL tab ──────────────────────────────────────── */}
-                    {activeTab === "pool" && <TabLevels {...propsLevels} />}
+                    {activeTab === "pool" && <SettingsTabLevels {...propsLevels} />}
 
                     {/* ── CHALLENGES tab ──────────────────────────────────────── */}
-                    {activeTab === "challenges" && <TabChallenges {...propsChallenges} />}
+                    {activeTab === "challenges" && <SettingsTabChallenges {...propsChallenges} />}
 
                 </div>{/* end settings-modal__body */}
             </div>

@@ -1,11 +1,5 @@
-import type {
-    SettingsTab
-} from "@utils/pages/types";
-
-export type SettingsTabElProps = {
-    activeTab: SettingsTab;
-    setActiveTab: (tab: SettingsTab) => void;
-}
+import type { SettingsTab } from "@utils/pages/types";
+import type { SettingsTabElProps } from "@components/props";
 
 export function SettingsTabEl({
     activeTab,

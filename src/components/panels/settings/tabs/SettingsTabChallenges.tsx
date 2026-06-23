@@ -1,29 +1,6 @@
-import type { Dispatch, SetStateAction } from "react";
+import type { SettingsTabChallengesProps } from "@components/props";
 
-export type TabChallengesProps = {
-    includeBaseChallenges: boolean;
-    setIncludeBaseChallenges: Dispatch<SetStateAction<boolean>>;
-    includeExtraChallenges: boolean;
-    setIncludeExtraChallenges: Dispatch<SetStateAction<boolean>>;
-    includePRank: boolean;
-    setIncludePRank: Dispatch<SetStateAction<boolean>>;
-    baseChance: number;
-    setBaseChance: Dispatch<SetStateAction<number>>;
-    extraChance: number;
-    setExtraChance: Dispatch<SetStateAction<number>>;
-    prankChance: number;
-    setPrankChance: Dispatch<SetStateAction<number>>;
-    includeDifficulties: boolean;
-    setIncludeDifficulties: Dispatch<SetStateAction<boolean>>;
-    includeWeaponsChallenges: boolean;
-    setIncludeWeaponsChallenges: Dispatch<SetStateAction<boolean>>;
-    specifyWeapons: boolean;
-    setSpecifyWeapons: Dispatch<SetStateAction<boolean>>;
-    specifyVarieties: boolean;
-    setSpecifyVarieties: Dispatch<SetStateAction<boolean>>;
-};
-
-export function TabChallenges({
+export function SettingsTabChallenges({
     includeBaseChallenges,
     setIncludeBaseChallenges,
     includeExtraChallenges,
@@ -44,7 +21,7 @@ export function TabChallenges({
     setSpecifyWeapons,
     specifyVarieties,
     setSpecifyVarieties
-}: TabChallengesProps) {
+}: SettingsTabChallengesProps) {
     return (
         <div className="control-stack">
             <div className="toggle-stack">
